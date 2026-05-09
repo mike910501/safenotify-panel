@@ -1,0 +1,174 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ============================================================
+   SafeNotify Panel — Paleta de colores (PRODUCT.md)
+   Light mode: beige/menta
+   Dark mode: antracita cálido / verde-marrón profundo
+   ============================================================ */
+
+:root {
+    /* shadcn/ui base variables — mapeados a la paleta SafeNotify */
+    --background: oklch(0.979 0.005 90);       /* #FAF8F5 beige cálido */
+    --foreground: oklch(0.145 0 0);            /* #1A1A1A */
+    --card: oklch(1 0 0);                       /* #FFFFFF */
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.46 0.12 130);           /* #3B6D11 verde oscuro */
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.94 0.04 130);         /* #E8F0DC verde menta suave */
+    --secondary-foreground: oklch(0.46 0.12 130);
+    --muted: oklch(0.94 0.04 130);
+    --muted-foreground: oklch(0.42 0 0);       /* gris medio */
+    --accent: oklch(0.83 0.11 130);            /* #B8D88A verde pistacho */
+    --accent-foreground: oklch(0.25 0.07 130); /* texto sobre pistacho */
+    --destructive: oklch(0.68 0.10 15);        /* #E88A88 rosa coral oscuro */
+    --border: oklch(0.90 0.02 90);
+    --input: oklch(0.90 0.02 90);
+    --ring: oklch(0.83 0.11 130);              /* verde pistacho para focus */
+    --chart-1: oklch(0.83 0.11 130);
+    --chart-2: oklch(0.77 0.11 130);
+    --chart-3: oklch(0.92 0.065 75);
+    --chart-4: oklch(0.77 0.09 15);
+    --chart-5: oklch(0.46 0.12 130);
+    --radius: 0.5rem;                          /* 8px — PRODUCT.md rounded-lg */
+    --sidebar: oklch(0.94 0.04 130);           /* #E8F0DC verde menta suave */
+    --sidebar-foreground: oklch(0.25 0.07 130);
+    --sidebar-primary: oklch(0.46 0.12 130);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.88 0.06 130);
+    --sidebar-accent-foreground: oklch(0.46 0.12 130);
+    --sidebar-border: oklch(0.87 0.04 130);
+    --sidebar-ring: oklch(0.83 0.11 130);
+
+    /* SafeNotify custom variables — usadas en componentes con bg-[var(--sn-*)] */
+    --sn-sidebar-bg: #E8F0DC;
+    --sn-sidebar-text-active: #3B6D11;
+    --sn-accent-green: #B8D88A;
+    --sn-accent-green-hover: #A5C674;
+    --sn-accent-orange: #FAE0B8;
+    --sn-accent-orange-hover: #F0C58A;
+    --sn-accent-red: #F4A8A6;
+    --sn-accent-red-hover: #E88A88;
+    --sn-text-on-coral: #7A2E2D;
+    --sn-text-on-peach: #854F0B;
+    --sn-text-on-mint: #3B6D11;
+    --sn-bg: #FAF8F5;
+    --sn-card-bg: #FFFFFF;
+    --sn-foreground: #1A1A1A;
+    --sn-muted: #6B7280;
+}
+
+/* Dark mode via prefers-color-scheme — respeta preferencia del OS */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* shadcn/ui base variables — modo oscuro */
+        --background: oklch(0.12 0.005 130);   /* #111210 antracita cálido */
+        --foreground: oklch(0.95 0.005 75);    /* #F0EDE8 */
+        --card: oklch(0.16 0.008 130);         /* #1C1F1A */
+        --card-foreground: oklch(0.95 0.005 75);
+        --popover: oklch(0.16 0.008 130);
+        --popover-foreground: oklch(0.95 0.005 75);
+        --primary: oklch(0.83 0.11 130);       /* #B8D88A verde pistacho (invertido) */
+        --primary-foreground: oklch(0.16 0.008 130);
+        --secondary: oklch(0.20 0.04 130);     /* #1E2A14 verde-marrón profundo */
+        --secondary-foreground: oklch(0.83 0.11 130);
+        --muted: oklch(0.20 0.04 130);
+        --muted-foreground: oklch(0.62 0 0);
+        --accent: oklch(0.46 0.12 130);        /* #3B6D11 verde oscuro */
+        --accent-foreground: oklch(0.95 0.005 75);
+        --destructive: oklch(0.55 0.09 15);
+        --border: oklch(1 0 0 / 10%);
+        --input: oklch(1 0 0 / 15%);
+        --ring: oklch(0.83 0.11 130);
+        --chart-1: oklch(0.83 0.11 130);
+        --chart-2: oklch(0.77 0.11 130);
+        --chart-3: oklch(0.92 0.065 75);
+        --chart-4: oklch(0.77 0.09 15);
+        --chart-5: oklch(0.46 0.12 130);
+        --sidebar: oklch(0.20 0.04 130);       /* #1E2A14 */
+        --sidebar-foreground: oklch(0.95 0.005 75);
+        --sidebar-primary: oklch(0.83 0.11 130);
+        --sidebar-primary-foreground: oklch(0.16 0.008 130);
+        --sidebar-accent: oklch(0.25 0.04 130);
+        --sidebar-accent-foreground: oklch(0.83 0.11 130);
+        --sidebar-border: oklch(1 0 0 / 10%);
+        --sidebar-ring: oklch(0.83 0.11 130);
+
+        /* SafeNotify custom variables — modo oscuro */
+        --sn-sidebar-bg: #1E2A14;
+        --sn-sidebar-text-active: #B8D88A;
+        --sn-accent-green: #3B6D11;
+        --sn-accent-green-hover: #4A8A16;
+        --sn-accent-orange: #7A5A2A;
+        --sn-accent-orange-hover: #8A6A35;
+        --sn-accent-red: #7A2A2A;
+        --sn-accent-red-hover: #8A3535;
+        --sn-text-on-coral: #F4A8A6;
+        --sn-text-on-peach: #FAE0B8;
+        --sn-text-on-mint: #B8D88A;
+        --sn-bg: #111210;
+        --sn-card-bg: #1C1F1A;
+        --sn-foreground: #F0EDE8;
+        --sn-muted: #9CA3AF;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    html {
+        @apply font-sans;
+    }
+}
