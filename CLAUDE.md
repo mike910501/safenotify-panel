@@ -42,7 +42,7 @@ Las siguientes migraciones fueron aprobadas explícitamente por Michael Ladino y
 
 | Archivo | Fecha de aprobación | Razón | Estado | Afecta al bot |
 |---|---|---|---|---|
-| `supabase/migrations/001_add_auth_user_id.sql` | 2026-05-09 | Vincular `usuarios_panel` con `auth.users` de Supabase Auth para que el panel pueda autenticar y autorizar acceso por negocio. La columna es NULLABLE. | **Pendiente de ejecutar en Supabase** | No. El bot de n8n no consulta `usuarios_panel`. |
+| `supabase/migrations/001_add_auth_user_id.sql` | 2026-05-09 | Vincular `usuarios_panel` con `auth.users` de Supabase Auth para que el panel pueda autenticar y autorizar acceso por negocio. La columna es NULLABLE. | Ejecutada el 2026-05-09 | No. El bot de n8n no consulta `usuarios_panel`. |
 
 **Instrucciones para ejecutar una migración aprobada:** ir al SQL Editor de Supabase (proyecto `safenotify-prod`), pegar el contenido del archivo de migración, revisar una vez más y ejecutar. Cambiar el estado en esta tabla a "Ejecutada" con la fecha.
 
