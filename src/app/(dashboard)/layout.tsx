@@ -1,12 +1,18 @@
-export default function DashboardLayout({
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { Sidebar } from "@/components/features/layout/Sidebar";
+
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const usuario = await getCurrentUser();
+  if (!usuario) redirect("/login");
+
   return (
-    <div className="flex min-h-screen bg-[var(--sn-bg)]">
-      {/* Sidebar placeholder — implementado en feat/sidebar */}
-      <aside className="w-[200px] shrink-0 bg-[var(--sn-sidebar-bg)] hidden lg:block" />
+    <div className="flex h-screen bg-background">
+      <Sidebar usuario={usuario} />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );

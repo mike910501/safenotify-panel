@@ -405,18 +405,24 @@ export type Database = {
           clerk_user_id: string | null;
           email: string;
           nombre: string | null;
-          /**
-           * Columna agregada por migración 001 (NULLABLE).
-           * Vincula con auth.users.id de Supabase Auth.
-           * Si la migración 001 aún no se ejecutó, este campo no existe en la BD.
-           */
-          auth_user_id?: string | null;
+          negocio_id: string;
+          rol: "owner" | "operator" | "admin";
+          activo: boolean;
+          ultimo_login: string | null;
+          created_at: string;
+          /** Columna agregada por migración 001. Vincula con auth.users.id. */
+          auth_user_id: string | null;
         };
         Insert: {
           id?: string;
           clerk_user_id?: string | null;
           email: string;
           nombre?: string | null;
+          negocio_id: string;
+          rol?: "owner" | "operator" | "admin";
+          activo?: boolean;
+          ultimo_login?: string | null;
+          created_at?: string;
           auth_user_id?: string | null;
         };
         Update: {
@@ -424,9 +430,22 @@ export type Database = {
           clerk_user_id?: string | null;
           email?: string;
           nombre?: string | null;
+          negocio_id?: string;
+          rol?: "owner" | "operator" | "admin";
+          activo?: boolean;
+          ultimo_login?: string | null;
+          created_at?: string;
           auth_user_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_panel_negocio_id_fkey";
+            columns: ["negocio_id"];
+            isOneToOne: false;
+            referencedRelation: "negocios";
+            referencedColumns: ["negocio_id"];
+          }
+        ];
       };
     };
     Views: {
