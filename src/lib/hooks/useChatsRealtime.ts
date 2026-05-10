@@ -1,28 +1,93 @@
 "use client";
 
-// TODO: implementar en feat/conversaciones
-// Suscripción a historial, sesiones_pausadas y pedidos.
-// En cualquier evento, refetch de chats_activos con SELECT.
-// Ver patrón "Patrón para vistas: refetch on event" en ARCHITECTURE.md §7.6
-
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { ChatActivo } from "@/types/domain.types";
 
-export function useChatsRealtime(
-  _negocioId: string,
-  initialChats: ChatActivo[] = []
-): ChatActivo[] {
-  const [chats, setChats] = useState<ChatActivo[]>(initialChats);
+interface UseChatsRealtimeParams {
+  negocioId: string | null;
+  rol: "admin" | "owner" | "operator";
+  onChange: (chats: ChatActivo[]) => void;
+}
+
+export function useChatsRealtime({
+  negocioId,
+  rol,
+  onChange,
+}: UseChatsRealtimeParams): void {
+  // Stable ref to onChange to avoid unnecessary effect reruns.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   useEffect(() => {
-    setChats(initialChats);
-    // TODO: abrir canales en historial, sesiones_pausadas, pedidos
-    // y refetch chats_activos en cada evento
-    return () => {
-      // cleanup: supabase.removeAllChannels()
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_negocioId]);
+    const supabase = createClient();
 
-  return chats;
+    // Debounce timer ref to batch rapid events.
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function refetch() {
+      let query = supabase
+        .from("chats_activos")
+        .select("*")
+        .order("ultimo_mensaje_at", { ascending: false });
+
+      if (rol !== "admin" && negocioId) {
+        query = query.eq("negocio_id", negocioId);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        console.error("[useChatsRealtime] refetch error:", error);
+        return;
+      }
+      onChangeRef.current((data as ChatActivo[]) ?? []);
+    }
+
+    function scheduleRefetch() {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(refetch, 200);
+    }
+
+    const filterExpr =
+      rol !== "admin" && negocioId ? `negocio_id=eq.${negocioId}` : undefined;
+
+    const channel = supabase
+      .channel("chats-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "historial",
+          ...(filterExpr ? { filter: filterExpr } : {}),
+        },
+        scheduleRefetch
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sesiones_pausadas",
+          ...(filterExpr ? { filter: filterExpr } : {}),
+        },
+        scheduleRefetch
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "pedidos",
+          ...(filterExpr ? { filter: filterExpr } : {}),
+        },
+        scheduleRefetch
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [negocioId, rol]);
 }

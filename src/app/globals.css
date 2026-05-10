@@ -48,117 +48,172 @@
 }
 
 /* ============================================================
-   SafeNotify Panel — Paleta de colores (PRODUCT.md)
-   Light mode: beige/menta
-   Dark mode: antracita cálido / verde-marrón profundo
+   SafeNotify Panel — Glassmorphism Dark Premium
+   Paleta principal: azul noche / púrpura
+   Acentos: verde menta (#B8D88A) y coral (#F4A8A6)
    ============================================================ */
 
 :root {
-    /* shadcn/ui base variables — mapeados a la paleta SafeNotify */
-    --background: oklch(0.979 0.005 90);       /* #FAF8F5 beige cálido */
-    --foreground: oklch(0.145 0 0);            /* #1A1A1A */
-    --card: oklch(1 0 0);                       /* #FFFFFF */
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.46 0.12 130);           /* #3B6D11 verde oscuro */
-    --primary-foreground: oklch(1 0 0);
-    --secondary: oklch(0.94 0.04 130);         /* #E8F0DC verde menta suave */
-    --secondary-foreground: oklch(0.46 0.12 130);
-    --muted: oklch(0.94 0.04 130);
-    --muted-foreground: oklch(0.42 0 0);       /* gris medio */
-    --accent: oklch(0.83 0.11 130);            /* #B8D88A verde pistacho */
-    --accent-foreground: oklch(0.25 0.07 130); /* texto sobre pistacho */
-    --destructive: oklch(0.68 0.10 15);        /* #E88A88 rosa coral oscuro */
-    --border: oklch(0.90 0.02 90);
-    --input: oklch(0.90 0.02 90);
-    --ring: oklch(0.83 0.11 130);              /* verde pistacho para focus */
-    --chart-1: oklch(0.83 0.11 130);
-    --chart-2: oklch(0.77 0.11 130);
-    --chart-3: oklch(0.92 0.065 75);
-    --chart-4: oklch(0.77 0.09 15);
-    --chart-5: oklch(0.46 0.12 130);
-    --radius: 0.5rem;                          /* 8px — PRODUCT.md rounded-lg */
-    --sidebar: oklch(0.94 0.04 130);           /* #E8F0DC verde menta suave */
-    --sidebar-foreground: oklch(0.25 0.07 130);
-    --sidebar-primary: oklch(0.46 0.12 130);
-    --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.88 0.06 130);
-    --sidebar-accent-foreground: oklch(0.46 0.12 130);
-    --sidebar-border: oklch(0.87 0.04 130);
-    --sidebar-ring: oklch(0.83 0.11 130);
+    /* ---- Glassmorphism raw tokens ---- */
+    --bg-deep-1: #0A0E27;
+    --bg-deep-2: #1A1654;
+    --bg-deep-3: #3B1670;
+    --glow-primary: #8B5CF6;
+    --glow-primary-soft: #A78BFA;
+    --glow-secondary: #3B82F6;
+    --accent-success: #B8D88A;
+    --accent-urgent: #F4A8A6;
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-tertiary: rgba(255, 255, 255, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-bg-hover: rgba(255, 255, 255, 0.10);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-border-strong: rgba(255, 255, 255, 0.20);
 
-    /* SafeNotify custom variables — usadas en componentes con bg-[var(--sn-*)] */
-    --sn-sidebar-bg: #E8F0DC;
-    --sn-sidebar-text-active: #3B6D11;
+    /* ---- shadcn/ui base variables mapeadas al sistema glass ---- */
+    --background: #0A0E27;
+    --foreground: #FFFFFF;
+    --card: rgba(255, 255, 255, 0.06);
+    --card-foreground: #FFFFFF;
+    --popover: #1A1654;
+    --popover-foreground: #FFFFFF;
+    --primary: #8B5CF6;
+    --primary-foreground: #FFFFFF;
+    --secondary: rgba(255, 255, 255, 0.08);
+    --secondary-foreground: rgba(255, 255, 255, 0.80);
+    --muted: rgba(255, 255, 255, 0.06);
+    --muted-foreground: rgba(255, 255, 255, 0.50);
+    --accent: rgba(139, 92, 246, 0.20);
+    --accent-foreground: #A78BFA;
+    --destructive: #F4A8A6;
+    --border: rgba(255, 255, 255, 0.12);
+    --input: rgba(255, 255, 255, 0.06);
+    --ring: #8B5CF6;
+    --chart-1: #8B5CF6;
+    --chart-2: #3B82F6;
+    --chart-3: #B8D88A;
+    --chart-4: #F4A8A6;
+    --chart-5: #FAE0B8;
+    --radius: 0.5rem;
+
+    /* ---- Sidebar variables ---- */
+    --sidebar: rgba(255, 255, 255, 0.04);
+    --sidebar-foreground: rgba(255, 255, 255, 0.70);
+    --sidebar-primary: #8B5CF6;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: rgba(255, 255, 255, 0.10);
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: rgba(255, 255, 255, 0.08);
+    --sidebar-ring: #8B5CF6;
+
+    /* ---- SafeNotify semantic accents (conservados como acentos pequeños) ---- */
     --sn-accent-green: #B8D88A;
     --sn-accent-green-hover: #A5C674;
     --sn-accent-orange: #FAE0B8;
     --sn-accent-orange-hover: #F0C58A;
     --sn-accent-red: #F4A8A6;
     --sn-accent-red-hover: #E88A88;
-    --sn-text-on-coral: #7A2E2D;
-    --sn-text-on-peach: #854F0B;
-    --sn-text-on-mint: #3B6D11;
-    --sn-bg: #FAF8F5;
-    --sn-card-bg: #FFFFFF;
-    --sn-foreground: #1A1A1A;
-    --sn-muted: #6B7280;
+
+    /* ---- Glows y sombras ---- */
+    --sn-glow-primary: 0 0 24px rgba(139, 92, 246, 0.40);
+    --sn-glow-success: 0 0 24px rgba(184, 216, 138, 0.50);
+    --sn-glow-urgent: 0 0 20px rgba(244, 168, 166, 0.45);
+    --sn-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30);
+    --sn-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.40);
+    --sn-active-glow: 0 0 20px rgba(139, 92, 246, 0.25);
 }
 
-/* Dark mode via prefers-color-scheme — respeta preferencia del OS */
-@media (prefers-color-scheme: dark) {
-    :root {
-        /* shadcn/ui base variables — modo oscuro */
-        --background: oklch(0.12 0.005 130);   /* #111210 antracita cálido */
-        --foreground: oklch(0.95 0.005 75);    /* #F0EDE8 */
-        --card: oklch(0.16 0.008 130);         /* #1C1F1A */
-        --card-foreground: oklch(0.95 0.005 75);
-        --popover: oklch(0.16 0.008 130);
-        --popover-foreground: oklch(0.95 0.005 75);
-        --primary: oklch(0.83 0.11 130);       /* #B8D88A verde pistacho (invertido) */
-        --primary-foreground: oklch(0.16 0.008 130);
-        --secondary: oklch(0.20 0.04 130);     /* #1E2A14 verde-marrón profundo */
-        --secondary-foreground: oklch(0.83 0.11 130);
-        --muted: oklch(0.20 0.04 130);
-        --muted-foreground: oklch(0.62 0 0);
-        --accent: oklch(0.46 0.12 130);        /* #3B6D11 verde oscuro */
-        --accent-foreground: oklch(0.95 0.005 75);
-        --destructive: oklch(0.55 0.09 15);
-        --border: oklch(1 0 0 / 10%);
-        --input: oklch(1 0 0 / 15%);
-        --ring: oklch(0.83 0.11 130);
-        --chart-1: oklch(0.83 0.11 130);
-        --chart-2: oklch(0.77 0.11 130);
-        --chart-3: oklch(0.92 0.065 75);
-        --chart-4: oklch(0.77 0.09 15);
-        --chart-5: oklch(0.46 0.12 130);
-        --sidebar: oklch(0.20 0.04 130);       /* #1E2A14 */
-        --sidebar-foreground: oklch(0.95 0.005 75);
-        --sidebar-primary: oklch(0.83 0.11 130);
-        --sidebar-primary-foreground: oklch(0.16 0.008 130);
-        --sidebar-accent: oklch(0.25 0.04 130);
-        --sidebar-accent-foreground: oklch(0.83 0.11 130);
-        --sidebar-border: oklch(1 0 0 / 10%);
-        --sidebar-ring: oklch(0.83 0.11 130);
+/* ============================================================
+   Keyframes — animaciones del sistema glassmorphism
+   ============================================================ */
 
-        /* SafeNotify custom variables — modo oscuro */
-        --sn-sidebar-bg: #1E2A14;
-        --sn-sidebar-text-active: #B8D88A;
-        --sn-accent-green: #3B6D11;
-        --sn-accent-green-hover: #4A8A16;
-        --sn-accent-orange: #7A5A2A;
-        --sn-accent-orange-hover: #8A6A35;
-        --sn-accent-red: #7A2A2A;
-        --sn-accent-red-hover: #8A3535;
-        --sn-text-on-coral: #F4A8A6;
-        --sn-text-on-peach: #FAE0B8;
-        --sn-text-on-mint: #B8D88A;
-        --sn-bg: #111210;
-        --sn-card-bg: #1C1F1A;
-        --sn-foreground: #F0EDE8;
-        --sn-muted: #9CA3AF;
-    }
+@keyframes gradientShift {
+    0%   { background-position: 0% 0%; }
+    50%  { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+@keyframes orbPulse {
+    0%   { transform: scale(1.0); opacity: 0.60; }
+    50%  { transform: scale(1.15); opacity: 0.90; }
+    100% { transform: scale(1.0); opacity: 0.60; }
+}
+
+@keyframes orbPulseAlt {
+    0%   { transform: scale(1.10); opacity: 0.50; }
+    50%  { transform: scale(0.95); opacity: 0.75; }
+    100% { transform: scale(1.10); opacity: 0.50; }
+}
+
+@keyframes messageEntry {
+    0%   { opacity: 0; transform: translateY(8px); }
+    70%  { opacity: 1; transform: translateY(-2px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes messageGlow {
+    0%   { box-shadow: 0 0 16px rgba(139, 92, 246, 0.40); }
+    100% { box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
+}
+
+@keyframes tagPulse {
+    0%, 100% { opacity: 0.85; }
+    50%       { opacity: 1.0; }
+}
+
+@keyframes iconPulse {
+    0%, 100% { opacity: 0.30; }
+    50%       { opacity: 0.50; }
+}
+
+/* ============================================================
+   Utility classes
+   ============================================================ */
+
+.sn-shadow-sm {
+    box-shadow: var(--sn-shadow-sm);
+}
+.sn-shadow-md {
+    box-shadow: var(--sn-shadow-md);
+}
+
+/* Fondo glassmorphism del sidebar — usado en Sidebar.tsx */
+.glass-sidebar {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Card glassmorphism base */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+}
+
+/* Input glassmorphism — focus glow púrpura */
+.glass-input {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+}
+.glass-input::placeholder {
+    color: var(--text-tertiary);
+}
+.glass-input:focus-visible {
+    outline: none;
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--glow-primary), 0 0 16px rgba(139, 92, 246, 0.40);
+}
+
+/* Tag bot activo — pulse sutil */
+.tag-bot-activo {
+    animation: tagPulse 4s ease-in-out infinite;
 }
 
 @layer base {
@@ -170,5 +225,12 @@
     }
     html {
         @apply font-sans;
+    }
+    /* Focus ring global: glow púrpura para inputs shadcn */
+    [data-slot="input"]:focus-visible,
+    [data-slot="textarea"]:focus-visible {
+        border-color: transparent;
+        box-shadow: 0 0 0 2px var(--glow-primary), 0 0 16px rgba(139, 92, 246, 0.40);
+        transition: box-shadow 200ms ease-out, border-color 200ms ease-out;
     }
 }

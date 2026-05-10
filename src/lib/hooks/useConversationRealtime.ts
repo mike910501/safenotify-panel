@@ -1,28 +1,51 @@
 "use client";
 
-// TODO: implementar en feat/conversaciones
-// Suscripción Realtime a historial para un (negocio_id, phone).
-// En INSERT, agrega el mensaje al estado local.
-// cleanup: supabase.removeChannel(channel) en return del useEffect.
-
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { Historial } from "@/types/domain.types";
 
-export function useConversationRealtime(
-  _negocioId: string,
-  _phone: string,
-  initialMessages: Historial[] = []
-): Historial[] {
-  const [messages, setMessages] = useState<Historial[]>(initialMessages);
+interface UseConversationRealtimeParams {
+  negocioId: string;
+  phone: string;
+  onNewMessage: (mensaje: Historial) => void;
+}
+
+export function useConversationRealtime({
+  negocioId,
+  phone,
+  onNewMessage,
+}: UseConversationRealtimeParams): void {
+  // Stable ref to callback to avoid unnecessary effect reruns.
+  const onNewMessageRef = useRef(onNewMessage);
+  onNewMessageRef.current = onNewMessage;
 
   useEffect(() => {
-    setMessages(initialMessages);
-    // TODO: abrir canal Supabase Realtime y suscribirse a historial
-    return () => {
-      // cleanup: supabase.removeChannel(channel)
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_negocioId, _phone]);
+    const supabase = createClient();
 
-  return messages;
+    const channel = supabase
+      .channel(`conversation-${negocioId}-${phone}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "historial",
+          // Supabase Realtime filter: filtrar por negocio_id.
+          // El filtro adicional por phone se aplica client-side abajo.
+          filter: `negocio_id=eq.${negocioId}`,
+        },
+        (payload) => {
+          const row = payload.new as Historial;
+          // Filtro client-side por phone para no mezclar chats del mismo negocio.
+          if (row.phone === phone) {
+            onNewMessageRef.current(row);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [negocioId, phone]);
 }
