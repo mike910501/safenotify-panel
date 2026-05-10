@@ -16,9 +16,9 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
 
   function handlePause() {
     startTransition(async () => {
-      const result = await pauseBot({ phone, negocioId, durationMinutes: 30 });
+      const result = await pauseBot({ phone, negocioId });
       if (result.ok) {
-        toast.success("Bot pausado por 30 minutos.");
+        toast.success("Tomaste el control de la conversación.");
       } else {
         toast.error("No se pudo realizar la acción. Intenta de nuevo.");
       }
@@ -29,7 +29,7 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
     startTransition(async () => {
       const result = await unpauseBot({ phone, negocioId });
       if (result.ok) {
-        toast.success("Bot reactivado.");
+        toast.success("Bot reactivado, ya responde de nuevo.");
       } else {
         toast.error("No se pudo realizar la acción. Intenta de nuevo.");
       }
@@ -61,7 +61,7 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
         }}
       >
         <Play className="h-3.5 w-3.5" />
-        {isPending ? "Reactivando..." : "Despausar"}
+        {isPending ? "Devolviendo..." : "Devolver al bot"}
       </button>
     );
   }
@@ -90,7 +90,7 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
       }}
     >
       <Pause className="h-3.5 w-3.5" />
-      {isPending ? "Pausando..." : "Pausar 30 min"}
+      {isPending ? "Tomando control..." : "Tomar el control"}
     </button>
   );
 }

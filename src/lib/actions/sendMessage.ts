@@ -115,10 +115,10 @@ export async function sendMessage({
   }
 
   if (webhookOk) {
-    // Pausar el bot automáticamente al enviar un mensaje manual.
+    // Al enviar un mensaje manual, pausamos el bot indefinidamente para que Claudia
+    // tenga control completo del chat. Debe devolver el control manualmente cuando termine.
     // Si falla la pausa, se loggea pero no se interrumpe — el mensaje ya fue enviado.
-    // TODO: agregar observabilidad (Sentry / Datadog) para fallo de pausa silencioso.
-    const pausaResult = await pauseBot({ phone, negocioId, durationMinutes: 30 });
+    const pausaResult = await pauseBot({ phone, negocioId });
     if (!pausaResult.ok) {
       console.warn(
         "[sendMessage] mensaje enviado pero pausa falló:",

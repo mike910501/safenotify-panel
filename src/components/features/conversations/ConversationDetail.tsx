@@ -3,19 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useConversationRealtime } from "@/lib/hooks/useConversationRealtime";
+import { usePausaConversacion } from "@/lib/hooks/usePausaConversacion";
 import { MessageBubble } from "./MessageBubble";
 import { PauseControls } from "./PauseControls";
 import { ManualMessageInput } from "./ManualMessageInput";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { getInitials, formatPhone, phoneToGradient } from "@/lib/utils";
-import { UserCheck } from "lucide-react";
 import type { Historial } from "@/types/domain.types";
 
 interface ConversationDetailProps {
@@ -32,6 +25,12 @@ export function ConversationDetail({
   const [mensajes, setMensajes] = useState<Historial[]>([]);
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const botPausadoActual = usePausaConversacion({
+    negocioId,
+    phone,
+    botPausadoInicial: botPausado,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -116,32 +115,8 @@ export function ConversationDetail({
           <PauseControls
             phone={phone}
             negocioId={negocioId}
-            botPausado={botPausado}
+            botPausado={botPausadoActual}
           />
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    size="sm"
-                    disabled
-                    className="opacity-50 cursor-not-allowed"
-                    style={{
-                      background:
-                        "linear-gradient(to right, var(--glow-primary), var(--glow-secondary))",
-                      color: "#FFFFFF",
-                      border: "none",
-                    }}
-                  >
-                    <UserCheck className="mr-1.5 h-3.5 w-3.5" />
-                    Tomar control
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>Próximamente</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </div>
 
