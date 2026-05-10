@@ -22,10 +22,10 @@ export function ManualMessageInput({ phone, negocioId }: ManualMessageInputProps
     startTransition(async () => {
       const result = await sendMessage({ phone, negocioId, contenido });
       if (result.ok) {
-        toast.success("Mensaje encolado, se enviará en breve");
+        toast.success("Mensaje enviado");
         if (inputRef.current) inputRef.current.value = "";
       } else {
-        toast.error("No se pudo encolar el mensaje. Intenta de nuevo.");
+        toast.error("No se pudo enviar el mensaje. Intenta de nuevo.");
       }
     });
   }
