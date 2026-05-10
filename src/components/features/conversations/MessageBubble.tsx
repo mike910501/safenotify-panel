@@ -1,4 +1,7 @@
-import { cn } from "@/lib/utils";
+"use client";
+
+import { motion } from "framer-motion";
+import { SPRING } from "@/lib/motion/springs";
 import type { Historial } from "@/types/domain.types";
 
 interface MessageBubbleProps {
@@ -6,11 +9,10 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ mensaje }: MessageBubbleProps) {
-  const { role, content, enviado_por, timestamp } = mensaje;
+  const { content, enviado_por, timestamp } = mensaje;
 
-  const isCliente = role === "user";
-  const isHumano = role === "assistant" && enviado_por === "humano";
-  const isBot = role === "assistant" && enviado_por !== "humano";
+  const esCliente = enviado_por === "cliente";
+  const esHumano = enviado_por === "humano";
 
   const time = new Date(timestamp).toLocaleTimeString("es-CO", {
     hour: "2-digit",
@@ -18,67 +20,48 @@ export function MessageBubble({ mensaje }: MessageBubbleProps) {
   });
 
   return (
-    <div
-      className={cn(
-        "flex group",
-        // Animación de entrada — NO backdrop-blur en burbujas por performance
-        "motion-safe:[animation:messageEntry_350ms_cubic-bezier(0.34,1.56,0.64,1)_both]",
-        "animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out",
-        isCliente ? "justify-start" : "justify-end"
-      )}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 16, scale: 0.94 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={SPRING.gentle}
+      className={`flex ${esCliente ? "justify-start" : "justify-end"}`}
     >
       <div
-        className={cn(
-          "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
-          // Animación de glow de entrada (solo en el div interno)
-          "motion-safe:[animation:messageEntry_350ms_cubic-bezier(0.34,1.56,0.64,1)_both,messageGlow_600ms_ease-out_both]",
-          // Asimetría tipo chat
-          isCliente && "rounded-bl-sm",
-          (isBot || isHumano) && "rounded-br-sm"
-        )}
-        style={
-          isCliente
-            ? {
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                color: "#FFFFFF",
-              }
-            : isBot
-            ? {
-                background:
-                  "linear-gradient(to bottom right, rgba(184,216,138,0.15), rgba(184,216,138,0.05))",
-                border: "1px solid rgba(184,216,138,0.25)",
-                color: "#DCEAC4",
-              }
-            : {
-                background:
-                  "linear-gradient(to bottom right, rgba(250,224,184,0.18), rgba(244,168,166,0.08))",
-                border: "1px solid rgba(244,168,166,0.25)",
-                color: "#FAE0B8",
-              }
-        }
+        className="max-w-[80%] px-3 py-2 rounded-2xl break-words"
+        style={{
+          background: esCliente
+            ? "rgba(255,255,255,0.06)"
+            : esHumano
+            ? "rgba(244,168,166,0.10)"
+            : "rgba(184,216,138,0.08)",
+          border: `1px solid ${
+            esCliente
+              ? "rgba(255,255,255,0.10)"
+              : esHumano
+              ? "rgba(244,168,166,0.25)"
+              : "rgba(184,216,138,0.20)"
+          }`,
+        }}
       >
-        {isHumano && (
-          <p
-            className="mb-1 text-[11px] font-medium"
-            style={{ color: "rgba(250,224,184,0.70)" }}
+        {esHumano && (
+          <span
+            className="block text-[10px] mb-1 opacity-60"
+            style={{ color: "#F4A8A6" }}
           >
             Mensaje manual del operador
-          </p>
+          </span>
         )}
-        <p className="whitespace-pre-wrap break-words leading-relaxed">
+        <p className="text-sm text-white whitespace-pre-wrap leading-relaxed">
           {content}
         </p>
-        {/* Timestamp: visible al hover del wrapper con `group` */}
         <p
-          className="mt-1 text-right text-[10px] transition-colors duration-150"
-          style={{
-            color: "rgba(255,255,255,0.40)",
-          }}
+          className="mt-1 text-right text-[10px]"
+          style={{ color: "rgba(255,255,255,0.40)" }}
         >
           {time}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

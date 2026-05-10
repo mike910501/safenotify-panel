@@ -3,14 +3,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useConversationRealtime } from "@/lib/hooks/useConversationRealtime";
 import { usePausaConversacion } from "@/lib/hooks/usePausaConversacion";
 import { MessageBubble } from "./MessageBubble";
 import { PauseControls } from "./PauseControls";
 import { ManualMessageInput } from "./ManualMessageInput";
+import { SwipeBackContainer } from "./SwipeBackContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getInitials, formatPhone, phoneToGradient } from "@/lib/utils";
+import { SPRING } from "@/lib/motion/springs";
 import type { Historial } from "@/types/domain.types";
 
 interface ConversationDetailProps {
@@ -77,6 +80,7 @@ export function ConversationDetail({
   const avatarGradient = phoneToGradient(phone);
 
   return (
+    <SwipeBackContainer>
     <div className="flex h-full flex-col">
       {/* Header glassmorphism */}
       <div
@@ -112,16 +116,24 @@ export function ConversationDetail({
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div
+          {/* Avatar con layoutId — shared element con ConversationListItem */}
+          <motion.div
+            layoutId={`avatar-${phone}`}
+            transition={SPRING.smooth}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white text-sm font-medium"
             style={{ background: avatarGradient }}
           >
             {initials}
-          </div>
+          </motion.div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-white">
+            {/* Phone con layoutId — shared element con ConversationListItem */}
+            <motion.p
+              layoutId={`phone-${phone}`}
+              transition={SPRING.smooth}
+              className="truncate text-sm font-medium text-white"
+            >
               {phone}
-            </p>
+            </motion.p>
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.50)" }}>
               {formatPhone(phone)}
             </p>
@@ -167,6 +179,7 @@ export function ConversationDetail({
         <ManualMessageInput phone={phone} negocioId={negocioId} />
       </div>
     </div>
+    </SwipeBackContainer>
   );
 }
 

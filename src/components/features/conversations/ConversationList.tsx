@@ -3,10 +3,26 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, MessageCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConversationListItem } from "./ConversationListItem";
 import { useChatsRealtime } from "@/lib/hooks/useChatsRealtime";
+import { SPRING } from "@/lib/motion/springs";
 import type { ChatActivo } from "@/types/domain.types";
+
+const listVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0 },
+};
 
 interface ConversationListProps {
   initialChats: ChatActivo[];
@@ -97,19 +113,25 @@ export function ConversationList({
             </div>
           )
         ) : (
-          filtered.map((chat) => (
-            /* transition-all para suavizar reorders */
-            <div
-              key={`${chat.negocio_id}-${chat.phone}`}
-              className="transition-all duration-300 ease-out"
-            >
-              <ConversationListItem
-                chat={chat}
-                isSelected={selectedPhone === chat.phone}
-                onClick={() => chat.phone && handleSelect(chat.phone)}
-              />
-            </div>
-          ))
+          <motion.div
+            variants={listVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {filtered.map((chat) => (
+              <motion.div
+                key={`${chat.negocio_id}-${chat.phone}`}
+                variants={itemVariants}
+                transition={SPRING.gentle}
+              >
+                <ConversationListItem
+                  chat={chat}
+                  isSelected={selectedPhone === chat.phone}
+                  onClick={() => chat.phone && handleSelect(chat.phone)}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
     </div>

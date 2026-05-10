@@ -3,7 +3,9 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { Pause, Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { pauseBot, unpauseBot } from "@/lib/actions/pauseBot";
+import { SPRING } from "@/lib/motion/springs";
 
 interface PauseControlsProps {
   phone: string;
@@ -36,67 +38,56 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
     });
   }
 
-  if (botPausado) {
-    return (
-      <button
-        type="button"
-        onClick={handleUnpause}
-        disabled={isPending}
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
-        style={{
-          minHeight: "44px",
-          background: "rgba(244,168,166,0.10)",
-          border: "1px solid rgba(244,168,166,0.30)",
-          color: "#F4A8A6",
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background =
-            "rgba(244,168,166,0.20)";
-          (e.currentTarget as HTMLButtonElement).style.boxShadow =
-            "0 0 20px rgba(244,168,166,0.45)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background =
-            "rgba(244,168,166,0.10)";
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
-        }}
-      >
-        <Play className="h-4 w-4 shrink-0" />
-        <span className="hidden md:inline text-xs font-medium">
-          {isPending ? "Devolviendo..." : "Devolver al bot"}
-        </span>
-      </button>
-    );
-  }
-
   return (
-    <button
+    <motion.button
       type="button"
-      onClick={handlePause}
+      onClick={botPausado ? handleUnpause : handlePause}
       disabled={isPending}
-      className="inline-flex items-center gap-1.5 rounded-lg px-3 transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
-      style={{
-        minHeight: "44px",
-        background: "rgba(250,224,184,0.10)",
-        border: "1px solid rgba(250,224,184,0.30)",
-        color: "#FAE0B8",
+      whileTap={{ scale: 0.92 }}
+      transition={SPRING.snappy}
+      animate={{
+        background: botPausado
+          ? "rgba(244,168,166,0.15)"
+          : "rgba(250,224,184,0.12)",
+        borderColor: botPausado
+          ? "rgba(244,168,166,0.40)"
+          : "rgba(250,224,184,0.30)",
+        boxShadow: botPausado
+          ? "0 0 20px rgba(244,168,166,0.35)"
+          : "0 0 0px rgba(0,0,0,0)",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background =
-          "rgba(250,224,184,0.18)";
-        (e.currentTarget as HTMLButtonElement).style.boxShadow =
-          "0 0 18px rgba(250,224,184,0.30)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background =
-          "rgba(250,224,184,0.10)";
-        (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
-      }}
+      className="relative h-11 w-11 md:w-auto md:px-3 rounded-xl border flex items-center justify-center gap-1.5 disabled:pointer-events-none disabled:opacity-50"
     >
-      <Pause className="h-4 w-4 shrink-0" />
-      <span className="hidden md:inline text-xs font-medium">
-        {isPending ? "Tomando control..." : "Tomar el control"}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={botPausado ? "play" : "pause"}
+          initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
+          animate={{ opacity: 1, rotate: 0, scale: 1 }}
+          exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
+          transition={SPRING.snappy}
+          className="flex items-center"
+          style={{ color: botPausado ? "#F4A8A6" : "#FAE0B8" }}
+        >
+          {botPausado ? (
+            <Play className="h-4 w-4" />
+          ) : (
+            <Pause className="h-4 w-4" />
+          )}
+        </motion.span>
+      </AnimatePresence>
+
+      <span
+        className="hidden md:inline text-xs font-medium"
+        style={{ color: botPausado ? "#F4A8A6" : "#FAE0B8" }}
+      >
+        {isPending
+          ? botPausado
+            ? "Devolviendo..."
+            : "Tomando control..."
+          : botPausado
+          ? "Devolver al bot"
+          : "Tomar el control"}
       </span>
-    </button>
+    </motion.button>
   );
 }

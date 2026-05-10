@@ -1,4 +1,8 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { cn, getInitials, formatRelativeTime, phoneToGradient } from "@/lib/utils";
+import { SPRING } from "@/lib/motion/springs";
 import type { ChatActivo } from "@/types/domain.types";
 
 interface ConversationListItemProps {
@@ -41,14 +45,14 @@ export function ConversationListItem({
   const avatarGradient = phoneToGradient(chat.phone ?? "");
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
+      whileTap={{ scale: 0.97 }}
+      transition={SPRING.snappy}
       className={cn(
-        "relative w-full text-left px-3 py-3 rounded-xl transition-all duration-200 ease-out flex items-start gap-3",
-        isSelected
-          ? "border-2"
-          : "border border-transparent hover:-translate-y-[2px] hover:scale-[1.02]"
+        "relative w-full text-left px-3 py-3 rounded-xl flex items-start gap-3",
+        isSelected ? "border-2" : "border border-transparent"
       )}
       style={
         isSelected
@@ -64,40 +68,27 @@ export function ConversationListItem({
               borderColor: "rgba(255,255,255,0.10)",
             }
       }
-      onMouseEnter={(e) => {
-        if (!isSelected) {
-          (e.currentTarget as HTMLButtonElement).style.background =
-            "rgba(255,255,255,0.10)";
-          (e.currentTarget as HTMLButtonElement).style.borderColor =
-            "rgba(255,255,255,0.20)";
-          (e.currentTarget as HTMLButtonElement).style.boxShadow =
-            "0 8px 24px rgba(139,92,246,0.15)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isSelected) {
-          (e.currentTarget as HTMLButtonElement).style.background =
-            "rgba(255,255,255,0.06)";
-          (e.currentTarget as HTMLButtonElement).style.borderColor =
-            "rgba(255,255,255,0.10)";
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
-        }
-      }}
     >
-      {/* Avatar con gradient único por teléfono */}
-      <div
+      {/* Avatar con layoutId para shared element transition lista → detalle */}
+      <motion.div
+        layoutId={`avatar-${chat.phone}`}
+        transition={SPRING.smooth}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white text-sm font-medium"
         style={{ background: avatarGradient }}
       >
         {avatarLabel}
-      </div>
+      </motion.div>
 
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-1">
-          <span className="truncate text-sm font-medium text-white">
+          <motion.span
+            layoutId={`phone-${chat.phone}`}
+            transition={SPRING.smooth}
+            className="truncate text-sm font-medium text-white"
+          >
             {nombre}
-          </span>
+          </motion.span>
           {timestamp && (
             <span
               className="shrink-0 text-[11px]"
@@ -157,6 +148,6 @@ export function ConversationListItem({
           )} */}
         </div>
       </div>
-    </button>
+    </motion.button>
   );
 }
