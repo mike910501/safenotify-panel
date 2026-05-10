@@ -4,7 +4,8 @@ export type ChatUrgencyLevel = "normal" | "requiere_humano" | "cliente_molesto";
 
 export type PedidoEstado =
   | "abierto"
-  | "en_preparacion"
+  | "en_camino"
+  | "listo"
   | "entregado"
   | "cancelado";
 

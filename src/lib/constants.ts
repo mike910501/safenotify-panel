@@ -2,14 +2,16 @@ import type { PedidoEstado } from "@/types/ui.types";
 
 export const PEDIDO_STATES: PedidoEstado[] = [
   "abierto",
-  "en_preparacion",
+  "en_camino",
+  "listo",
   "entregado",
   "cancelado",
 ];
 
 export const PEDIDO_STATE_LABELS: Record<PedidoEstado, string> = {
   abierto: "Abierto",
-  en_preparacion: "En preparación",
+  en_camino: "En camino",
+  listo: "Listo",
   entregado: "Entregado",
   cancelado: "Cancelado",
 };

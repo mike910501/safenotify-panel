@@ -2,7 +2,7 @@
 
 import type { PedidoEstado } from "@/types/ui.types";
 
-type FiltroEstado = "todos" | PedidoEstado;
+export type FiltroEstado = "todos" | PedidoEstado;
 
 interface PedidoFiltersProps {
   filtroActivo: FiltroEstado;
@@ -13,7 +13,8 @@ interface PedidoFiltersProps {
 const TABS: { key: FiltroEstado; label: string }[] = [
   { key: "todos", label: "Todos" },
   { key: "abierto", label: "Abiertos" },
-  { key: "en_preparacion", label: "En preparación" },
+  { key: "en_camino", label: "En camino" },
+  { key: "listo", label: "Listos" },
   { key: "entregado", label: "Entregados" },
   { key: "cancelado", label: "Cancelados" },
 ];

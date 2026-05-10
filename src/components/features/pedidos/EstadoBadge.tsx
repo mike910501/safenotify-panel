@@ -18,8 +18,18 @@ const ESTADO_CONFIG: Record<
     className:
       "px-2.5 py-1 rounded-md text-xs font-medium backdrop-blur-sm animate-[tagPulse_3s_ease-in-out_infinite]",
   },
-  en_preparacion: {
-    label: "En preparación",
+  en_camino: {
+    label: "En camino",
+    style: {
+      background: "rgba(139,92,246,0.15)",
+      border: "1px solid rgba(139,92,246,0.40)",
+      color: "#A78BFA",
+      boxShadow: "0 0 8px rgba(139,92,246,0.20)",
+    },
+    className: "px-2.5 py-1 rounded-md text-xs font-medium backdrop-blur-sm",
+  },
+  listo: {
+    label: "Listo",
     style: {
       background: "rgba(255,209,102,0.15)",
       border: "1px solid rgba(255,209,102,0.40)",

@@ -1,19 +1,31 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { PedidoFilters } from "@/components/features/pedidos/PedidoFilters";
+import type { FiltroEstado } from "@/components/features/pedidos/PedidoFilters";
 import { PedidoRow } from "@/components/features/pedidos/PedidoRow";
+import { updatePedidoEstado } from "@/lib/actions/updatePedidoEstado";
+import type { AccionPedido } from "@/lib/actions/updatePedidoEstado";
 import type { PedidoEstado } from "@/types/ui.types";
 import type { Tables } from "@/lib/supabase/database.types";
 
 type Pedido = Tables<"pedidos">;
-type FiltroEstado = "todos" | PedidoEstado;
+
+/** Maps an accion command to the expected new estado. */
+const ACCION_TO_ESTADO: Record<AccionPedido, PedidoEstado> = {
+  camino: "en_camino",
+  listo: "listo",
+  entregado: "entregado",
+  cancelado: "cancelado",
+};
 
 const ESTADO_LABELS: Record<PedidoEstado, string> = {
   abierto: "Abierto",
-  en_preparacion: "En preparación",
+  en_camino: "En camino",
+  listo: "Listo",
   entregado: "Entregado",
   cancelado: "Cancelado",
 };
@@ -29,6 +41,15 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>("todos");
   const [newPedidoIds, setNewPedidoIds] = useState<Set<string>>(new Set());
 
+  // Set of pedido IDs that have been optimistically updated and are waiting for bot confirmation
+  const [pendingConfirmationIds, setPendingConfirmationIds] = useState<Set<string>>(new Set());
+
+  // Map of pedidoId -> original estado, so we can revert on error
+  const originalEstados = useRef<Map<string, PedidoEstado>>(new Map());
+
+  // Map of pedidoId -> timeout handle for the 10s warning
+  const confirmationTimeouts = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
   const markAsNew = useCallback((id: string) => {
     setNewPedidoIds((prev) => new Set(prev).add(id));
     setTimeout(() => {
@@ -38,6 +59,20 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
         return next;
       });
     }, 2000);
+  }, []);
+
+  const clearPendingConfirmation = useCallback((pedidoId: string) => {
+    setPendingConfirmationIds((prev) => {
+      const next = new Set(prev);
+      next.delete(pedidoId);
+      return next;
+    });
+    const handle = confirmationTimeouts.current.get(pedidoId);
+    if (handle !== undefined) {
+      clearTimeout(handle);
+      confirmationTimeouts.current.delete(pedidoId);
+    }
+    originalEstados.current.delete(pedidoId);
   }, []);
 
   useEffect(() => {
@@ -74,6 +109,8 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
         },
         (payload) => {
           const actualizado = payload.new as Pedido;
+          // Bot confirmed — clear the pending state and reflect the real value
+          clearPendingConfirmation(actualizado.id);
           setPedidos((prev) =>
             prev.map((p) => (p.id === actualizado.id ? actualizado : p))
           );
@@ -97,7 +134,76 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [negocioId, rol, markAsNew]);
+  }, [negocioId, rol, markAsNew, clearPendingConfirmation]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => {
+    const timeouts = confirmationTimeouts.current;
+    return () => {
+      timeouts.forEach((handle) => clearTimeout(handle));
+    };
+  }, []);
+
+  const handleAccion = useCallback(
+    async (pedidoCorto: number, accion: AccionPedido) => {
+      // Find the pedido by pedido_corto
+      const pedido = pedidos.find((p) => p.pedido_corto === pedidoCorto);
+      if (!pedido) return;
+
+      const estadoEsperado = ACCION_TO_ESTADO[accion];
+
+      // Save original estado for potential revert
+      originalEstados.current.set(pedido.id, pedido.estado as PedidoEstado);
+
+      // Optimistic update
+      setPedidos((prev) =>
+        prev.map((p) =>
+          p.id === pedido.id ? { ...p, estado: estadoEsperado } : p
+        )
+      );
+
+      // Mark as pending confirmation
+      setPendingConfirmationIds((prev) => new Set(prev).add(pedido.id));
+
+      // Schedule 10s warning if bot hasn't confirmed yet
+      const warningHandle = setTimeout(() => {
+        setPendingConfirmationIds((prev) => {
+          const next = new Set(prev);
+          next.delete(pedido.id);
+          return next;
+        });
+        confirmationTimeouts.current.delete(pedido.id);
+        originalEstados.current.delete(pedido.id);
+        toast.warning(
+          "El bot está tardando en confirmar. Verifica el estado del pedido."
+        );
+      }, 10_000);
+
+      confirmationTimeouts.current.set(pedido.id, warningHandle);
+
+      // Call the server action
+      const result = await updatePedidoEstado({ pedidoCorto, accion });
+
+      if (!result.ok) {
+        // Revert optimistic update
+        const estadoOriginal = originalEstados.current.get(pedido.id);
+        if (estadoOriginal !== undefined) {
+          setPedidos((prev) =>
+            prev.map((p) =>
+              p.id === pedido.id ? { ...p, estado: estadoOriginal } : p
+            )
+          );
+        }
+        clearPendingConfirmation(pedido.id);
+        toast.error("No se pudo enviar el comando al bot. Intenta de nuevo.");
+        return;
+      }
+
+      // Success — show feedback immediately (bot will confirm via Realtime)
+      toast.success("Comando enviado al bot. El cliente recibirá la notificación en segundos.");
+    },
+    [pedidos, clearPendingConfirmation]
+  );
 
   const pedidosFiltrados =
     filtroEstado === "todos"
@@ -107,7 +213,8 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
   const conteos: Record<FiltroEstado, number> = {
     todos: pedidos.length,
     abierto: pedidos.filter((p) => p.estado === "abierto").length,
-    en_preparacion: pedidos.filter((p) => p.estado === "en_preparacion").length,
+    en_camino: pedidos.filter((p) => p.estado === "en_camino").length,
+    listo: pedidos.filter((p) => p.estado === "listo").length,
     entregado: pedidos.filter((p) => p.estado === "entregado").length,
     cancelado: pedidos.filter((p) => p.estado === "cancelado").length,
   };
@@ -165,7 +272,9 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
           <p className="text-white/60 text-sm">
             No hay pedidos en estado{" "}
             <span className="text-white font-medium">
-              {filtroEstado !== "todos" ? ESTADO_LABELS[filtroEstado as PedidoEstado] : filtroEstado}
+              {filtroEstado !== "todos"
+                ? ESTADO_LABELS[filtroEstado as PedidoEstado]
+                : filtroEstado}
             </span>
             .
           </p>
@@ -202,6 +311,8 @@ export function PedidosTable({ initialPedidos, negocioId, rol }: PedidosTablePro
             key={pedido.id}
             pedido={pedido}
             isNew={newPedidoIds.has(pedido.id)}
+            isPendingConfirmation={pendingConfirmationIds.has(pedido.id)}
+            onAccion={handleAccion}
           />
         ))}
       </div>

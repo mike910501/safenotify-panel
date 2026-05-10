@@ -203,7 +203,7 @@ export type Database = {
           metodo_pago: string | null;
           direccion_entrega: string | null;
           notas: string | null;
-          estado: string;
+          estado: "abierto" | "en_camino" | "listo" | "entregado" | "cancelado";
           historial_modificaciones: Json | null;
           creado_en: string;
           actualizado_en: string;
@@ -220,7 +220,7 @@ export type Database = {
           metodo_pago?: string | null;
           direccion_entrega?: string | null;
           notas?: string | null;
-          estado?: string;
+          estado?: "abierto" | "en_camino" | "listo" | "entregado" | "cancelado";
           historial_modificaciones?: Json | null;
           creado_en?: string;
           actualizado_en?: string;
@@ -237,7 +237,7 @@ export type Database = {
           metodo_pago?: string | null;
           direccion_entrega?: string | null;
           notas?: string | null;
-          estado?: string;
+          estado?: "abierto" | "en_camino" | "listo" | "entregado" | "cancelado";
           historial_modificaciones?: Json | null;
           creado_en?: string;
           actualizado_en?: string;

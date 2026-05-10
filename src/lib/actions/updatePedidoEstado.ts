@@ -1,90 +1,114 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
-import type { PedidoEstado } from "@/types/ui.types";
-import type { Json } from "@/lib/supabase/database.types";
 
-const ESTADOS_VALIDOS: readonly PedidoEstado[] = [
-  "abierto",
-  "en_preparacion",
+export type AccionPedido = "camino" | "listo" | "entregado" | "cancelado";
+
+const ACCIONES_VALIDAS: readonly AccionPedido[] = [
+  "camino",
+  "listo",
   "entregado",
   "cancelado",
 ] as const;
 
-interface UpdateParams {
-  pedidoId: string;
-  nuevoEstado: PedidoEstado;
+interface UpdatePedidoEstadoParams {
+  pedidoCorto: number;
+  accion: AccionPedido;
 }
 
 type UpdateResult = { ok: true } | { ok: false; error: string };
 
-interface HistorialEntry {
-  fecha: string;
-  de: string;
-  a: string;
-  por: string;
+function isAccionValida(value: string): value is AccionPedido {
+  return (ACCIONES_VALIDAS as readonly string[]).includes(value);
 }
 
 export async function updatePedidoEstado({
-  pedidoId,
-  nuevoEstado,
-}: UpdateParams): Promise<UpdateResult> {
-  // Validate estado value
-  if (!ESTADOS_VALIDOS.includes(nuevoEstado)) {
-    return { ok: false, error: "Estado no válido." };
+  pedidoCorto,
+  accion,
+}: UpdatePedidoEstadoParams): Promise<UpdateResult> {
+  // Validate accion
+  if (!isAccionValida(accion)) {
+    return { ok: false, error: "Acción no válida." };
+  }
+
+  // Validate pedidoCorto
+  if (!Number.isInteger(pedidoCorto) || pedidoCorto <= 0) {
+    return { ok: false, error: "Número de pedido inválido." };
   }
 
   const usuario = await getCurrentUser();
   if (!usuario) return { ok: false, error: "No autenticado." };
 
+  // TODO: cuando admin pueda gestionar múltiples negocios desde el panel,
+  // agregar un parámetro negocioId opcional y un selector de negocio en la UI.
+  if (!usuario.negocioId) {
+    return { ok: false, error: "Admin sin negocio asignado." };
+  }
+
+  if (!process.env.BOT_WEBHOOK_URL) {
+    console.error("[updatePedidoEstado] BOT_WEBHOOK_URL no está definida");
+    return { ok: false, error: "Configuración del servidor incompleta." };
+  }
+
   const supabase = await createClient();
 
-  // Fetch the pedido to validate permissions and read current state
-  const { data: pedido, error: fetchError } = await supabase
-    .from("pedidos")
-    .select("id, negocio_id, estado, historial_modificaciones")
-    .eq("id", pedidoId)
+  const { data: negocio, error: negocioError } = await supabase
+    .from("negocios")
+    .select("contacto_humano, twilio_from")
+    .eq("negocio_id", usuario.negocioId)
     .maybeSingle();
 
-  if (fetchError || !pedido) {
-    return { ok: false, error: "Pedido no encontrado." };
+  if (negocioError || !negocio) {
+    console.error("[updatePedidoEstado] no se pudo leer el negocio", negocioError);
+    return { ok: false, error: "No se pudo obtener la configuración del negocio." };
   }
 
-  // Permission check: non-admin can only update pedidos from their own negocio
-  if (usuario.rol !== "admin" && pedido.negocio_id !== usuario.negocioId) {
-    return { ok: false, error: "Sin permiso para actualizar este pedido." };
+  if (!negocio.contacto_humano || !negocio.twilio_from) {
+    return {
+      ok: false,
+      error: "El negocio no tiene configurado contacto_humano o twilio_from.",
+    };
   }
 
-  // Build updated historial_modificaciones
-  const entrada: HistorialEntry = {
-    fecha: new Date().toISOString(),
-    de: pedido.estado,
-    a: nuevoEstado,
-    por: usuario.email,
-  };
+  // Normalize twilio_from: ensure it has the "whatsapp:" prefix once
+  const cleanTo = negocio.twilio_from.startsWith("whatsapp:")
+    ? negocio.twilio_from
+    : `whatsapp:${negocio.twilio_from}`;
 
-  const historialPrevio: Json[] = Array.isArray(pedido.historial_modificaciones)
-    ? (pedido.historial_modificaciones as Json[])
-    : [];
+  const params = new URLSearchParams();
+  params.set("Body", `${accion} ${pedidoCorto}`);
+  params.set("From", `whatsapp:${negocio.contacto_humano}`);
+  params.set("To", cleanTo);
+  params.set("ProfileName", "Panel SafeNotify");
+  params.set("WaId", negocio.contacto_humano.replace(/^\+/, ""));
 
-  const nuevoHistorial: Json[] = [...historialPrevio, entrada as unknown as Json];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
 
-  const { error: updateError } = await supabase
-    .from("pedidos")
-    .update({
-      estado: nuevoEstado,
-      actualizado_en: new Date().toISOString(),
-      historial_modificaciones: nuevoHistorial,
-    })
-    .eq("id", pedidoId);
+  try {
+    const response = await fetch(process.env.BOT_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params.toString(),
+      signal: controller.signal,
+    });
 
-  if (updateError) {
-    return { ok: false, error: "Error al actualizar el pedido." };
+    if (!response.ok) {
+      console.error(
+        "[updatePedidoEstado] webhook respondió con error",
+        { status: response.status, accion, pedidoCorto, negocioId: usuario.negocioId }
+      );
+      return { ok: false, error: "No se pudo enviar el comando al bot." };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    console.error("[updatePedidoEstado] webhook inalcanzable", err);
+    return { ok: false, error: "No se pudo enviar el comando al bot." };
+  } finally {
+    clearTimeout(timeout);
   }
-
-  revalidatePath("/pedidos");
-
-  return { ok: true };
 }
