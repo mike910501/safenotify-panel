@@ -31,7 +31,10 @@ export function ManualMessageInput({ phone, negocioId }: ManualMessageInputProps
   }
 
   return (
-    <div className="px-4 py-3 bg-transparent">
+    <div
+      className="px-4 py-3 bg-transparent"
+      style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+    >
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           ref={inputRef}
@@ -40,7 +43,8 @@ export function ManualMessageInput({ phone, negocioId }: ManualMessageInputProps
           disabled={isPending}
           autoComplete="off"
           maxLength={1000}
-          className="glass-input flex-1 h-9 rounded-xl px-3 text-sm transition-all duration-200 ease-out disabled:opacity-50"
+          /* text-base en mobile (16px, evita zoom iOS), text-sm en desktop */
+          className="glass-input flex-1 h-11 rounded-xl px-3 text-base md:text-sm transition-all duration-200 ease-out disabled:opacity-50"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -51,8 +55,10 @@ export function ManualMessageInput({ phone, negocioId }: ManualMessageInputProps
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex items-center justify-center shrink-0 rounded-lg px-3 text-sm font-medium transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
           style={{
+            minWidth: "44px",
+            minHeight: "44px",
             background: "linear-gradient(to right, #7BB857, #B8D88A)",
             color: "#0A0E27",
           }}
@@ -65,7 +71,7 @@ export function ManualMessageInput({ phone, negocioId }: ManualMessageInputProps
           }}
         >
           <Send className="h-4 w-4" />
-          <span className="hidden sm:inline">
+          <span className="hidden sm:inline ml-1.5">
             {isPending ? "Enviando..." : "Enviar"}
           </span>
         </button>

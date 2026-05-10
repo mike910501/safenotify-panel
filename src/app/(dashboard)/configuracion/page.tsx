@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { LogOut } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { signOut } from "@/lib/actions/auth/signOut";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -29,7 +31,7 @@ export default async function ConfiguracionPage() {
     : "Primera vez";
 
   return (
-    <div className="p-6 max-w-md">
+    <div className="p-4 md:p-6 max-w-md">
       <h1 className="text-xl font-medium mb-5">Configuración</h1>
 
       <Card>
@@ -44,6 +46,24 @@ export default async function ConfiguracionPage() {
           <InfoRow label="Ultimo acceso" value={ultimoLoginFormateado} />
         </CardContent>
       </Card>
+
+      {/* Cerrar sesión — visible siempre, esencial en mobile donde el sidebar está oculto */}
+      <div className="mt-4">
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-out"
+            style={{
+              background: "rgba(244,168,166,0.10)",
+              border: "1px solid rgba(244,168,166,0.30)",
+              color: "#F4A8A6",
+            }}
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            Cerrar sesión
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

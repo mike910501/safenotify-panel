@@ -29,7 +29,7 @@ export function MessageBubble({ mensaje }: MessageBubbleProps) {
     >
       <div
         className={cn(
-          "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm",
+          "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
           // Animación de glow de entrada (solo en el div interno)
           "motion-safe:[animation:messageEntry_350ms_cubic-bezier(0.34,1.56,0.64,1)_both,messageGlow_600ms_ease-out_both]",
           // Asimetría tipo chat

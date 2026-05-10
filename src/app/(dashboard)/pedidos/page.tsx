@@ -30,7 +30,7 @@ export default async function PedidosPage() {
     <div className="flex flex-col h-full">
       {/* Page header */}
       <div
-        className="shrink-0 px-6 py-5"
+        className="shrink-0 px-4 md:px-6 py-5"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
       >
         <h1
@@ -50,7 +50,7 @@ export default async function PedidosPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5">
         <PedidosTable
           initialPedidos={initialPedidos}
           negocioId={usuario.negocioId}

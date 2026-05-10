@@ -21,7 +21,8 @@ const TABS: { key: FiltroEstado; label: string }[] = [
 
 export function PedidoFilters({ filtroActivo, onChange, conteos }: PedidoFiltersProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    /* Scroll horizontal en mobile; wrap en desktop */
+    <div className="flex overflow-x-auto scroll-smooth gap-2 pb-1 md:flex-wrap md:overflow-visible">
       {TABS.map(({ key, label }) => {
         const isActive = filtroActivo === key;
         const count = conteos[key] ?? 0;
@@ -31,7 +32,7 @@ export function PedidoFilters({ filtroActivo, onChange, conteos }: PedidoFilters
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className="px-3 py-1.5 rounded-lg backdrop-blur-md text-sm font-medium transition-all duration-200"
+            className="shrink-0 px-3 py-1.5 rounded-lg backdrop-blur-md text-sm font-medium transition-all duration-200"
             style={
               isActive
                 ? {

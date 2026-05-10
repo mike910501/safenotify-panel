@@ -42,8 +42,9 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
         type="button"
         onClick={handleUnpause}
         disabled={isPending}
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-lg px-3 transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
         style={{
+          minHeight: "44px",
           background: "rgba(244,168,166,0.10)",
           border: "1px solid rgba(244,168,166,0.30)",
           color: "#F4A8A6",
@@ -60,8 +61,10 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
           (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
         }}
       >
-        <Play className="h-3.5 w-3.5" />
-        {isPending ? "Devolviendo..." : "Devolver al bot"}
+        <Play className="h-4 w-4 shrink-0" />
+        <span className="hidden md:inline text-xs font-medium">
+          {isPending ? "Devolviendo..." : "Devolver al bot"}
+        </span>
       </button>
     );
   }
@@ -71,8 +74,9 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
       type="button"
       onClick={handlePause}
       disabled={isPending}
-      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 rounded-lg px-3 transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
       style={{
+        minHeight: "44px",
         background: "rgba(250,224,184,0.10)",
         border: "1px solid rgba(250,224,184,0.30)",
         color: "#FAE0B8",
@@ -89,8 +93,10 @@ export function PauseControls({ phone, negocioId, botPausado }: PauseControlsPro
         (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
       }}
     >
-      <Pause className="h-3.5 w-3.5" />
-      {isPending ? "Tomando control..." : "Tomar el control"}
+      <Pause className="h-4 w-4 shrink-0" />
+      <span className="hidden md:inline text-xs font-medium">
+        {isPending ? "Tomando control..." : "Tomar el control"}
+      </span>
     </button>
   );
 }

@@ -81,7 +81,7 @@ function AccionesDropdown({
         <button
           type="button"
           disabled={disabled}
-          className="flex h-7 w-7 items-center justify-center rounded-md transition-all duration-200 disabled:opacity-50"
+          className="flex h-11 w-11 items-center justify-center rounded-md transition-all duration-200 disabled:opacity-50"
           style={{
             background: "rgba(255,255,255,0.06)",
             border: "1px solid rgba(255,255,255,0.12)",

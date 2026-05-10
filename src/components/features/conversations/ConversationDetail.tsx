@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useConversationRealtime } from "@/lib/hooks/useConversationRealtime";
 import { usePausaConversacion } from "@/lib/hooks/usePausaConversacion";
@@ -70,6 +72,7 @@ export function ConversationDetail({
     }
   }, [mensajes]);
 
+  const router = useRouter();
   const initials = getInitials(phone);
   const avatarGradient = phoneToGradient(phone);
 
@@ -95,6 +98,20 @@ export function ConversationDetail({
         />
 
         <div className="flex items-center gap-3 min-w-0">
+          {/* Botón atrás — solo mobile */}
+          <button
+            type="button"
+            onClick={() => router.push("/conversaciones")}
+            className="md:hidden flex items-center justify-center shrink-0 rounded-lg transition-colors duration-200"
+            style={{
+              minWidth: "44px",
+              minHeight: "44px",
+              color: "rgba(255,255,255,0.70)",
+            }}
+            aria-label="Volver a conversaciones"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white text-sm font-medium"
             style={{ background: avatarGradient }}

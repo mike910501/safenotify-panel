@@ -60,7 +60,7 @@ export function Sidebar({ usuario }: SidebarProps) {
 
   return (
     <aside
-      className="glass-sidebar flex h-screen w-[200px] shrink-0 flex-col"
+      className="glass-sidebar hidden md:flex h-screen w-[200px] shrink-0 flex-col"
     >
       {/* User info header */}
       <div
