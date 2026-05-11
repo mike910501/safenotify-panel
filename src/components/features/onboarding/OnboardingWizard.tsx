@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useWizardPersistence } from "@/lib/hooks/useWizardPersistence";
 import { SPRING } from "@/lib/motion/springs";
@@ -8,28 +9,36 @@ import { Step1Negocio } from "./Step1Negocio";
 import { Step2Horarios } from "./Step2Horarios";
 import { Step3Menu } from "./Step3Menu";
 import { Step4MetodosPago } from "./Step4MetodosPago";
+import { Step5Cuenta } from "./Step5Cuenta";
 import { WizardProgress } from "./WizardProgress";
+import {
+  submitOnboarding,
+  type SubmitOnboardingResult,
+} from "@/lib/actions/onboarding/submitOnboarding";
 import type {
+  OnboardingPayload,
   Step1Data,
   Step2Data,
   Step3Data,
   Step4Data,
+  Step5Data,
 } from "@/lib/onboarding/schemas";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 const STORAGE_KEY = "onboarding_wizard_v1";
 
-type StepNumber = 1 | 2 | 3 | 4;
+type StepNumber = 1 | 2 | 3 | 4 | 5;
 
-interface WizardState {
+interface PersistedWizardState {
   currentStep: StepNumber;
   step1: Step1Data | null;
   step2: Step2Data | null;
   step3: Step3Data | null;
   step4: Step4Data | null;
+  // step5 is NOT persisted: contains password.
 }
 
-const INITIAL_STATE: WizardState = {
+const INITIAL_STATE: PersistedWizardState = {
   currentStep: 1,
   step1: null,
   step2: null,
@@ -42,6 +51,7 @@ const STEP_LABELS: Record<StepNumber, string> = {
   2: "Horarios",
   3: "Menú",
   4: "Pagos",
+  5: "Cuenta",
 };
 
 const slideVariants: Variants = {
@@ -57,11 +67,34 @@ const slideVariants: Variants = {
 };
 
 export function OnboardingWizard() {
-  const { value, setValue, hydrated } = useWizardPersistence<WizardState>(
-    STORAGE_KEY,
-    INITIAL_STATE
-  );
+  const router = useRouter();
+  const { value, setValue, clear, hydrated } =
+    useWizardPersistence<PersistedWizardState>(STORAGE_KEY, INITIAL_STATE);
   const [direction, setDirection] = useState(1);
+  // step5 (credentials) is kept in memory only — never persisted.
+  const [step5InMemory, setStep5InMemory] = useState<Step5Data | null>(null);
+
+  // Defensive: if persisted state lands us on a later step without the
+  // earlier data (manual localStorage edit, schema migration), rewind to 1.
+  useEffect(() => {
+    if (!hydrated) return;
+    const corrupted =
+      (value.currentStep >= 2 && !value.step1) ||
+      (value.currentStep >= 3 && !value.step2) ||
+      (value.currentStep >= 4 && !value.step3) ||
+      (value.currentStep >= 5 && !value.step4);
+    if (corrupted) {
+      setValue((prev) => ({ ...prev, currentStep: 1 }));
+    }
+  }, [
+    hydrated,
+    value.currentStep,
+    value.step1,
+    value.step2,
+    value.step3,
+    value.step4,
+    setValue,
+  ]);
 
   // Avoid hydration mismatch: server and client both render the placeholder
   // until localStorage read completes on the client.
@@ -90,9 +123,39 @@ export function OnboardingWizard() {
   }
 
   function handleStep4Submit(data: Step4Data) {
-    // Phase 4 will wire the actual account-creation server action.
-    // For now, persist the captured step and stay on the page.
-    setValue((prev) => ({ ...prev, step4: data }));
+    setDirection(1);
+    setValue((prev) => ({ ...prev, step4: data, currentStep: 5 }));
+  }
+
+  async function handleStep5Submit(
+    data: Step5Data
+  ): Promise<SubmitOnboardingResult> {
+    setStep5InMemory(data);
+
+    if (!value.step1 || !value.step2 || !value.step3 || !value.step4) {
+      return {
+        ok: false,
+        error: "Faltan datos de pasos anteriores. Vuelve a empezar el registro.",
+      };
+    }
+
+    const payload: OnboardingPayload = {
+      step1: value.step1,
+      step2: value.step2,
+      step3: value.step3,
+      step4: value.step4,
+      step5: data,
+    };
+
+    const result = await submitOnboarding(payload);
+
+    if (result.ok) {
+      clear();
+      setStep5InMemory(null);
+      router.push("/onboarding/completado");
+    }
+
+    return result;
   }
 
   return (
@@ -141,6 +204,21 @@ export function OnboardingWizard() {
                 onBack={() => goTo(3)}
               />
             )}
+            {value.currentStep === 5 &&
+              value.step1 &&
+              value.step2 &&
+              value.step3 &&
+              value.step4 && (
+                <Step5Cuenta
+                  initialValues={step5InMemory}
+                  step1={value.step1}
+                  step2={value.step2}
+                  step3={value.step3}
+                  step4={value.step4}
+                  onSubmit={handleStep5Submit}
+                  onBack={() => goTo(4)}
+                />
+              )}
           </motion.div>
         </AnimatePresence>
       </div>

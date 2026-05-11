@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { SPRING } from "@/lib/motion/springs";
 import {
   PAYMENT_METHODS,
@@ -43,10 +43,6 @@ export function Step4MetodosPago({
       : [...methods, method];
     setValue("methods", next, { shouldValidate: true });
   }
-
-  // Phase 3: la creación de cuenta llega en Fase 4. El submit queda preparado
-  // pero el botón se muestra deshabilitado con copy explícito.
-  const finalActionEnabled = false;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
@@ -122,24 +118,6 @@ export function Step4MetodosPago({
         </p>
       )}
 
-      <div
-        className="rounded-xl px-3 py-2.5 text-xs"
-        style={{
-          background: "rgba(250,224,184,0.08)",
-          border: "1px solid rgba(250,224,184,0.25)",
-          color: "rgba(255,255,255,0.75)",
-        }}
-      >
-        <p style={{ color: "#FAE0B8" }} className="font-medium">
-          Crear cuenta — próximamente
-        </p>
-        <p className="mt-1" style={{ color: "rgba(255,255,255,0.60)" }}>
-          El paso final (email, contraseña y WhatsApp del dueño) estará disponible
-          en breve. Mientras tanto puedes completar este paso y avisarnos para
-          activar manualmente.
-        </p>
-      </div>
-
       <div className="flex items-center justify-between pt-2">
         <motion.button
           type="button"
@@ -159,7 +137,7 @@ export function Step4MetodosPago({
 
         <motion.button
           type="submit"
-          disabled={!finalActionEnabled || !isValid}
+          disabled={!isValid}
           whileTap={{ scale: 0.96 }}
           transition={SPRING.snappy}
           className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white disabled:pointer-events-none disabled:opacity-40"
@@ -169,7 +147,8 @@ export function Step4MetodosPago({
             boxShadow: "0 0 24px rgba(139,92,246,0.40)",
           }}
         >
-          Crear cuenta
+          Siguiente
+          <ArrowRight className="h-4 w-4" />
         </motion.button>
       </div>
     </form>
