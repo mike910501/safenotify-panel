@@ -125,23 +125,31 @@ export async function submitOnboarding(
   const menuImageUrl = data.step3.menuImageUrl || null;
 
   try {
-    const { error } = await admin.from("negocios").insert({
-      negocio_id: negocioId,
-      nombre_negocio: data.step1.businessName,
-      tipo_negocio: data.step1.businessType,
-      direccion: direccionCompleta,
-      horarios: horariosTexto,
-      menu: menuText,
-      menu_imagen_url: menuImageUrl,
-      metodos_pago: metodosPagoTexto,
-      telefono_dueno: data.step5.ownerWhatsapp,
-      contacto_humano: data.step5.ownerWhatsapp,
-      numeros_notificacion: data.step5.ownerWhatsapp,
-      prompt_sistema: promptSistema,
-    });
+    const { data: insertedNegocio, error } = await admin
+      .from("negocios")
+      .insert({
+        negocio_id: negocioId,
+        nombre_negocio: data.step1.businessName,
+        tipo_negocio: data.step1.businessType,
+        direccion: direccionCompleta,
+        horarios: horariosTexto,
+        menu: menuText,
+        menu_imagen_url: menuImageUrl,
+        metodos_pago: metodosPagoTexto,
+        telefono_dueno: data.step5.ownerWhatsapp,
+        contacto_humano: data.step5.ownerWhatsapp,
+        numeros_notificacion: data.step5.ownerWhatsapp,
+        prompt_sistema: promptSistema,
+      })
+      .select()
+      .single();
 
-    if (error) {
-      console.error("[onboarding] negocios insert failed:", error);
+    if (error || !insertedNegocio) {
+      console.error("[onboarding] negocios insert returned no row:", {
+        error,
+        insertedNegocio,
+        negocioId,
+      });
       const rolledBack = await rollbackAuthUser(admin, authUserId);
       return {
         ok: false,
@@ -163,16 +171,26 @@ export async function submitOnboarding(
 
   // 7. Insert into usuarios_panel. On failure, rollback negocios + auth user.
   try {
-    const { error } = await admin.from("usuarios_panel").insert({
-      email: data.step5.email,
-      negocio_id: negocioId,
-      rol: "owner",
-      activo: true,
-      auth_user_id: authUserId,
-    });
+    const { data: insertedUsuario, error } = await admin
+      .from("usuarios_panel")
+      .insert({
+        email: data.step5.email,
+        negocio_id: negocioId,
+        rol: "owner",
+        activo: true,
+        auth_user_id: authUserId,
+      })
+      .select()
+      .single();
 
-    if (error) {
-      console.error("[onboarding] usuarios_panel insert failed:", error);
+    if (error || !insertedUsuario) {
+      console.error("[onboarding] usuarios_panel insert returned no row:", {
+        error,
+        insertedUsuario,
+        negocioId,
+        authUserId,
+        email: data.step5.email,
+      });
       const negocioRolled = await rollbackNegocio(admin, negocioId);
       const userRolled = await rollbackAuthUser(admin, authUserId);
       const fullyRolled = negocioRolled && userRolled;
