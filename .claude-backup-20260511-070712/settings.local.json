@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/michael/projects/safenotify-panel status)",
+      "Bash(npx create-next-app@15 . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(yes)",
+      "Bash(npx create-next-app@15 *)",
+      "Bash(cp /tmp/safenotify-temp/package.json /home/michael/projects/safenotify-panel/package.json)",
+      "Bash(sed -i 's/\"name\": \"safenotify-temp\"/\"name\": \"safenotify-panel\"/' /home/michael/projects/safenotify-panel/package.json)",
+      "Bash(cp /tmp/safenotify-temp/tsconfig.json /home/michael/projects/safenotify-panel/tsconfig.json)",
+      "Bash(cp /tmp/safenotify-temp/next.config.ts /home/michael/projects/safenotify-panel/next.config.ts)",
+      "Bash(cp /tmp/safenotify-temp/postcss.config.mjs /home/michael/projects/safenotify-panel/postcss.config.mjs)",
+      "Bash(cp /tmp/safenotify-temp/eslint.config.mjs /home/michael/projects/safenotify-panel/eslint.config.mjs)",
+      "Bash(cp /tmp/safenotify-temp/next-env.d.ts /home/michael/projects/safenotify-panel/next-env.d.ts)",
+      "Bash(cp /tmp/safenotify-temp/src/app/favicon.ico /home/michael/projects/safenotify-panel/src/app/favicon.ico)",
+      "Bash(cp /tmp/safenotify-temp/public/next.svg /home/michael/projects/safenotify-panel/public/)",
+      "Bash(cp /tmp/safenotify-temp/public/vercel.svg /home/michael/projects/safenotify-panel/public/)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest *)",
+      "Bash(npm run *)",
+      "Bash(node *)",
+      "Bash(npx eslint *)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}
