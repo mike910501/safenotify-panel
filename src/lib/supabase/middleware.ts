@@ -50,7 +50,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && pathname === "/login") {
+  const authOnlyPages = ["/login", "/onboarding"];
+
+  if (user && authOnlyPages.includes(pathname)) {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = "/conversaciones";
     return NextResponse.redirect(dashboardUrl);

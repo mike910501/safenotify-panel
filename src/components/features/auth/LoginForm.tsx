@@ -128,6 +128,20 @@ export function LoginForm() {
           ¿Olvidaste tu contraseña?
         </Link>
       </p>
+
+      <p
+        className="text-center text-sm"
+        style={{ color: "rgba(255,255,255,0.50)" }}
+      >
+        ¿No tienes cuenta?{" "}
+        <Link
+          href="/onboarding"
+          className="hover:text-white transition-colors duration-150"
+          style={{ color: "#A5B4FC" }}
+        >
+          Registra tu negocio
+        </Link>
+      </p>
     </form>
   );
 }
