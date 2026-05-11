@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { SPRING } from "@/lib/motion/springs";
+import { useInvalidShake } from "./useInvalidShake";
 import {
   BUSINESS_TYPE_LABELS,
   DAYS_OF_WEEK,
@@ -46,6 +47,7 @@ export function Step5Cuenta({
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<Step5Data>({
     resolver: zodResolver(step5Schema),
@@ -62,6 +64,12 @@ export function Step5Cuenta({
     (day) => !step2.schedule[day].closed
   ).length;
   const emailAlreadyExists = serverError === EMAIL_EXISTS_HINT;
+  const currentEmail = watch("email") ?? "";
+  const loginHrefWithEmail = currentEmail
+    ? `/login?email=${encodeURIComponent(currentEmail)}`
+    : "/login";
+
+  const { controls, shake } = useInvalidShake();
 
   async function onFormSubmit(data: Step5Data) {
     setServerError(null);
@@ -73,7 +81,7 @@ export function Step5Cuenta({
 
   return (
     <form
-      onSubmit={handleSubmit(onFormSubmit)}
+      onSubmit={handleSubmit(onFormSubmit, shake)}
       noValidate
       className="space-y-4"
     >
@@ -131,7 +139,7 @@ export function Step5Cuenta({
           {serverError}
           {emailAlreadyExists && (
             <Link
-              href="/login"
+              href={loginHrefWithEmail}
               className="ml-1 underline transition-colors hover:text-white"
               style={{ color: "#F4A8A6" }}
             >
@@ -155,9 +163,10 @@ export function Step5Cuenta({
           autoComplete="email"
           inputMode="email"
           placeholder="tu@correo.com"
+          disabled={isSubmitting}
           {...register("email")}
           aria-invalid={!!errors.email}
-          className="glass-input h-9 w-full rounded-xl px-3 text-sm"
+          className="glass-input h-9 w-full rounded-xl px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
         {errors.email && (
           <p className="text-xs" style={{ color: "#F4A8A6" }}>
@@ -179,9 +188,10 @@ export function Step5Cuenta({
           type="password"
           autoComplete="new-password"
           placeholder="Mínimo 8 caracteres"
+          disabled={isSubmitting}
           {...register("password")}
           aria-invalid={!!errors.password}
-          className="glass-input h-9 w-full rounded-xl px-3 text-sm"
+          className="glass-input h-9 w-full rounded-xl px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
         {errors.password && (
           <p className="text-xs" style={{ color: "#F4A8A6" }}>
@@ -203,9 +213,10 @@ export function Step5Cuenta({
           type="password"
           autoComplete="new-password"
           placeholder="Repite la contraseña"
+          disabled={isSubmitting}
           {...register("confirmPassword")}
           aria-invalid={!!errors.confirmPassword}
-          className="glass-input h-9 w-full rounded-xl px-3 text-sm"
+          className="glass-input h-9 w-full rounded-xl px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
         {errors.confirmPassword && (
           <p className="text-xs" style={{ color: "#F4A8A6" }}>
@@ -228,9 +239,10 @@ export function Step5Cuenta({
           inputMode="tel"
           autoComplete="tel"
           placeholder="+573001234567"
+          disabled={isSubmitting}
           {...register("ownerWhatsapp")}
           aria-invalid={!!errors.ownerWhatsapp}
-          className="glass-input h-9 w-full rounded-xl px-3 text-sm"
+          className="glass-input h-9 w-full rounded-xl px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
         {errors.ownerWhatsapp && (
           <p className="text-xs" style={{ color: "#F4A8A6" }}>
@@ -259,18 +271,31 @@ export function Step5Cuenta({
 
         <motion.button
           type="submit"
-          disabled={!isValid || isSubmitting}
+          animate={controls}
+          disabled={isSubmitting}
           whileTap={{ scale: 0.96 }}
           transition={SPRING.snappy}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white disabled:pointer-events-none"
           style={{
             background:
               "linear-gradient(to right, var(--glow-primary), var(--glow-secondary))",
-            boxShadow: "0 0 24px rgba(139,92,246,0.40)",
+            boxShadow: isValid
+              ? "0 0 24px rgba(139,92,246,0.40)"
+              : "none",
+            opacity: isSubmitting ? 0.85 : isValid ? 1 : 0.55,
+            transition: "box-shadow 180ms ease-out, opacity 180ms ease-out",
           }}
         >
-          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
+          {isSubmitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : serverError ? (
+            <RotateCcw className="h-4 w-4" />
+          ) : null}
+          {isSubmitting
+            ? "Creando cuenta..."
+            : serverError
+            ? "Reintentar"
+            : "Crear cuenta"}
         </motion.button>
       </div>
     </form>

@@ -12,6 +12,7 @@ import {
   type PaymentMethod,
   type Step4Data,
 } from "@/lib/onboarding/schemas";
+import { useInvalidShake } from "./useInvalidShake";
 
 interface Step4MetodosPagoProps {
   initialValues: Step4Data | null;
@@ -36,6 +37,7 @@ export function Step4MetodosPago({
   });
 
   const methods = watch("methods") ?? [];
+  const { controls, shake } = useInvalidShake();
 
   function toggleMethod(method: PaymentMethod) {
     const next = methods.includes(method)
@@ -45,7 +47,11 @@ export function Step4MetodosPago({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit, shake)}
+      noValidate
+      className="space-y-4"
+    >
       <header className="mb-2">
         <h2
           className="text-base font-semibold"
@@ -137,14 +143,18 @@ export function Step4MetodosPago({
 
         <motion.button
           type="submit"
-          disabled={!isValid}
+          animate={controls}
           whileTap={{ scale: 0.96 }}
           transition={SPRING.snappy}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white"
           style={{
             background:
               "linear-gradient(to right, var(--glow-primary), var(--glow-secondary))",
-            boxShadow: "0 0 24px rgba(139,92,246,0.40)",
+            boxShadow: isValid
+              ? "0 0 24px rgba(139,92,246,0.40)"
+              : "none",
+            opacity: isValid ? 1 : 0.55,
+            transition: "box-shadow 180ms ease-out, opacity 180ms ease-out",
           }}
         >
           Siguiente

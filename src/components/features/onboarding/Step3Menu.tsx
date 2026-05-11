@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { SPRING } from "@/lib/motion/springs";
 import { step3Schema, type Step3Data } from "@/lib/onboarding/schemas";
+import { useInvalidShake } from "./useInvalidShake";
 
 interface Step3MenuProps {
   initialValues: Step3Data | null;
@@ -27,9 +28,14 @@ export function Step3Menu({ initialValues, onSubmit, onBack }: Step3MenuProps) {
   });
 
   const menuText = watch("menuText") ?? "";
+  const { controls, shake } = useInvalidShake();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit, shake)}
+      noValidate
+      className="space-y-4"
+    >
       <header className="mb-2">
         <h2
           className="text-base font-semibold"
@@ -51,7 +57,7 @@ export function Step3Menu({ initialValues, onSubmit, onBack }: Step3MenuProps) {
           className="text-sm font-medium"
           style={{ color: "rgba(255,255,255,0.80)" }}
         >
-          Productos
+          Tu menú
         </Label>
         <textarea
           id="menuText"
@@ -102,7 +108,7 @@ export function Step3Menu({ initialValues, onSubmit, onBack }: Step3MenuProps) {
         className="text-xs leading-relaxed"
         style={{ color: "rgba(255,255,255,0.45)" }}
       >
-        Necesitamos al menos uno: texto o link. Después podrás refinar tu menú
+        Necesitamos al menos uno: texto o link. Después podrás ajustar tu menú
         desde la sección de Configuración.
       </p>
 
@@ -125,14 +131,18 @@ export function Step3Menu({ initialValues, onSubmit, onBack }: Step3MenuProps) {
 
         <motion.button
           type="submit"
-          disabled={!isValid}
+          animate={controls}
           whileTap={{ scale: 0.96 }}
           transition={SPRING.snappy}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white"
           style={{
             background:
               "linear-gradient(to right, var(--glow-primary), var(--glow-secondary))",
-            boxShadow: "0 0 24px rgba(139,92,246,0.40)",
+            boxShadow: isValid
+              ? "0 0 24px rgba(139,92,246,0.40)"
+              : "none",
+            opacity: isValid ? 1 : 0.55,
+            transition: "box-shadow 180ms ease-out, opacity 180ms ease-out",
           }}
         >
           Siguiente

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/features/auth/LoginForm";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
@@ -33,7 +34,9 @@ export default async function LoginPage() {
           Inicia sesión para continuar
         </p>
       </div>
-      <LoginForm />
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }

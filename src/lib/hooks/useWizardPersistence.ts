@@ -23,6 +23,8 @@ export interface UseWizardPersistenceResult<T> {
   setValue: Dispatch<SetStateAction<T>>;
   clear: () => void;
   hydrated: boolean;
+  /** True only after hydration when stored data was discarded (expired TTL or version mismatch). */
+  wasReset: boolean;
 }
 
 export function useWizardPersistence<T>(
@@ -31,6 +33,7 @@ export function useWizardPersistence<T>(
 ): UseWizardPersistenceResult<T> {
   const [value, setValue] = useState<T>(initialValue);
   const [hydrated, setHydrated] = useState(false);
+  const [wasReset, setWasReset] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -47,12 +50,14 @@ export function useWizardPersistence<T>(
           setValue(parsed.data);
         } else {
           window.localStorage.removeItem(key);
+          setWasReset(true);
         }
       }
     } catch {
       // Corrupt JSON or storage disabled — drop and fall back to initialValue.
       try {
         window.localStorage.removeItem(key);
+        setWasReset(true);
       } catch {
         // Storage fully unavailable; nothing else to do.
       }
@@ -88,5 +93,5 @@ export function useWizardPersistence<T>(
     setValue(initialValue);
   }, [key, initialValue]);
 
-  return { value, setValue, clear, hydrated };
+  return { value, setValue, clear, hydrated, wasReset };
 }

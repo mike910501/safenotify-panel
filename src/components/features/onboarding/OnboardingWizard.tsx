@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { toast } from "sonner";
 import { useWizardPersistence } from "@/lib/hooks/useWizardPersistence";
 import { SPRING } from "@/lib/motion/springs";
 import { Step1Negocio } from "./Step1Negocio";
@@ -68,11 +69,18 @@ const slideVariants: Variants = {
 
 export function OnboardingWizard() {
   const router = useRouter();
-  const { value, setValue, clear, hydrated } =
+  const { value, setValue, clear, hydrated, wasReset } =
     useWizardPersistence<PersistedWizardState>(STORAGE_KEY, INITIAL_STATE);
   const [direction, setDirection] = useState(1);
   // step5 (credentials) is kept in memory only — never persisted.
   const [step5InMemory, setStep5InMemory] = useState<Step5Data | null>(null);
+
+  // Notify the user once when the hook just discarded expired/version-mismatched data.
+  useEffect(() => {
+    if (wasReset) {
+      toast.info("Tu progreso anterior expiró. Empezamos de nuevo.");
+    }
+  }, [wasReset]);
 
   // Defensive: if persisted state lands us on a later step without the
   // earlier data (manual localStorage edit, schema migration), rewind to 1.

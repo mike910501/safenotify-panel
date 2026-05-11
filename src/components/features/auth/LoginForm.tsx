@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/actions/auth/signIn";
@@ -18,6 +19,8 @@ type FormValues = z.infer<typeof schema>;
 
 export function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const prefilledEmail = searchParams.get("email") ?? "";
 
   const {
     register,
@@ -25,6 +28,7 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    defaultValues: { email: prefilledEmail, password: "" },
   });
 
   async function onSubmit(values: FormValues) {

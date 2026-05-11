@@ -55,4 +55,18 @@ Las siguientes migraciones fueron aprobadas explícitamente por Michael Ladino y
 
 - Bot n8n: producción estable, v6.0 en Supabase.
 - Schema Supabase: 8 tablas (negocios, historial, resumenes, pedidos, interacciones, sesiones_pausadas, etc.).
-- Panel web: este repo, fase de scaffolding.
+- Panel web: v1 funcional en producción. Hito v1.5 (onboarding self-service) listo en branch `feat/onboarding-wizard` pendiente de merge.
+
+## Hitos completados
+
+### v1.5: Onboarding self-service
+
+**Completado** en branch `feat/onboarding-wizard` (pendiente de merge a `main`).
+
+Ruta `/onboarding` accesible sin auth, wizard de 5 pasos, server action atómico con rollback, signIn automático, redirect a `/onboarding/completado`.
+
+**Pendiente:** integración Twilio para notificación a Michael cuando se registre un negocio nuevo (hoy se logea por `console.log` con prefijo `[ONBOARDING]`).
+
+**Variable de entorno requerida:** `SUPABASE_SERVICE_ROLE_KEY` (sin prefijo `NEXT_PUBLIC_`) — usada únicamente por `src/lib/supabase/admin.ts` con `import "server-only"`.
+
+**Documentación detallada:** `src/components/features/onboarding/README.md`.
