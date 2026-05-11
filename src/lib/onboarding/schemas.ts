@@ -121,8 +121,11 @@ export const step2Schema = z.object({
 
 export const step3Schema = z
   .object({
-    menuText: z.string().trim().max(5000, "El menú es muy largo").optional(),
-    menuImageUrl: z.string().url("URL de imagen inválida").optional(),
+    menuText: z.string().trim().max(5000, "El menú es muy largo"),
+    menuImageUrl: z
+      .string()
+      .url("URL de imagen inválida")
+      .or(z.literal("")),
   })
   .refine(
     (data) =>
