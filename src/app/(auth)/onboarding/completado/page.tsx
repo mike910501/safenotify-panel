@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
-export default function OnboardingCompletadoPage() {
+interface OnboardingCompletadoPageProps {
+  searchParams: Promise<{ ref?: string }>;
+}
+
+export default async function OnboardingCompletadoPage({
+  searchParams,
+}: OnboardingCompletadoPageProps) {
+  const { ref } = await searchParams;
+
   return (
     <div
       className="w-full max-w-md rounded-2xl px-8 py-8"
@@ -32,13 +40,13 @@ export default function OnboardingCompletadoPage() {
             backgroundClip: "text",
           }}
         >
-          Tu cuenta está lista
+          ¡Gracias! Recibimos tu solicitud
         </h1>
         <p
           className="mt-2 text-sm"
           style={{ color: "rgba(255,255,255,0.70)" }}
         >
-          Ya puedes entrar al panel y conocer tu nueva herramienta.
+          Pronto te contactaremos para activar tu cuenta.
         </p>
       </div>
 
@@ -51,25 +59,36 @@ export default function OnboardingCompletadoPage() {
         }}
       >
         <p className="font-medium" style={{ color: "#FAE0B8" }}>
-          Estamos activando tu bot de WhatsApp.
+          ¿Qué sigue?
         </p>
         <p className="mt-1.5" style={{ color: "rgba(255,255,255,0.65)" }}>
-          En menos de 24 horas tu número quedará conectado. Te avisaremos por
-          WhatsApp cuando esté listo. Mientras tanto puedes recorrer el panel.
+          Revisamos tu información, te escribimos al WhatsApp que nos dejaste,
+          y activamos tu cuenta. Suele tomar menos de 24 horas hábiles.
         </p>
       </div>
 
-      <Link
-        href="/conversaciones"
-        className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-[1px] active:scale-[0.97]"
-        style={{
-          background:
-            "linear-gradient(to right, var(--glow-primary), var(--glow-secondary))",
-          boxShadow: "0 0 24px rgba(139,92,246,0.40)",
-        }}
+      {ref && (
+        <p
+          className="mt-4 text-center text-xs font-mono"
+          style={{ color: "rgba(255,255,255,0.40)" }}
+        >
+          Referencia: {ref}
+        </p>
+      )}
+
+      <p
+        className="mt-6 text-center text-sm"
+        style={{ color: "rgba(255,255,255,0.50)" }}
       >
-        Ir al panel
-      </Link>
+        ¿Ya tienes cuenta?{" "}
+        <Link
+          href="/login"
+          className="hover:text-white transition-colors duration-150"
+          style={{ color: "#A5B4FC" }}
+        >
+          Inicia sesión
+        </Link>
+      </p>
     </div>
   );
 }
