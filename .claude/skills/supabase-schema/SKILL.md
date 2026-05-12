@@ -22,6 +22,7 @@ Convención: nombres en español, snake_case, IDs de tipo `text` (no UUID) cuand
 | `mensajes_salientes_panel` | Panel | **LEER y ESCRIBIR.** Cola de mensajes que el panel encola para enviar vía Twilio. |
 | `chats_activos` | Vista derivada | SOLO LEER. Es VIEW de Postgres con resumen de conversaciones. |
 | `usuarios_panel` | Panel | LEER y ESCRIBIR (auth). |
+| `leads` | Wizard `/onboarding` (server action con service-role) | LEER (admin), ESCRIBIR (admin manual o conversión). Ver §"Tabla leads (Fase A)". |
 
 ⚠️ **CAMBIO IMPORTANTE (2026-05-10):** El panel **NO hace UPDATE directo** a `pedidos.estado`. Ver sección "Cambio de estado de pedidos" más abajo.
 
@@ -252,6 +253,29 @@ Usuarios autenticados del panel.
 | `created_at` | timestamptz | NO | `now()` |
 | `auth_user_id` | uuid | YES | null (FK a auth.users.id ON DELETE CASCADE, agregada en migración 001) |
 
+### `leads` (Fase A)
+Capturas del wizard público de onboarding. Una fila por intento de registro. Michael las revisa desde admin panel y decide si convertir el lead en cuenta real (creando manualmente `negocios` + `usuarios_panel`).
+
+⚠️ **Estado:** schema definido en migración `20260512_create_leads_table.sql`. **PENDIENTE de aplicar** en producción (revisar `supabase/migrations/README.md`).
+
+| Columna | Tipo | Nullable | Default |
+|---|---|---|---|
+| `id` | uuid | NO | `gen_random_uuid()` |
+| `nombre_negocio` | text | NO | - |
+| `tipo_negocio` | text | YES | null |
+| `contacto_nombre` | text | NO | - |
+| `contacto_email` | text | NO | - |
+| `contacto_telefono` | text | YES | null |
+| `ciudad` | text | YES | null |
+| `payload_wizard` | jsonb | NO | - (todo el payload del wizard, para reconstrucción) |
+| `estado` | text | NO | `'nuevo'` (CHECK: `'nuevo' | 'contactado' | 'convertido' | 'descartado'`) |
+| `notas_admin` | text | YES | null |
+| `negocio_id` | text | YES | null (FK a `negocios.negocio_id` ON DELETE SET NULL, se setea al convertir) |
+| `created_at` | timestamptz | NO | `now()` |
+| `updated_at` | timestamptz | NO | `now()` |
+
+**Índices:** `leads_estado_idx (estado)`, `leads_created_at_desc_idx (created_at DESC)`.
+
 ## Cambio de estado de pedidos (PATRÓN OBLIGATORIO)
 
 ⚠️ **El panel NO hace UPDATE directo a `pedidos.estado`.** Por dos razones:
@@ -360,12 +384,63 @@ WHERE negocio_id = $1 AND estado IN ('abierto', 'en_camino', 'listo')
 ORDER BY creado_en DESC;
 ```
 
+## Row Level Security (RLS)
+
+A partir de Fase A (admin panel), las tablas tienen RLS habilitado. El diseño es:
+
+| Tabla | RLS estado | Acceso admin | Acceso owner / operator | Escribe el bot de n8n? |
+|---|---|---|---|---|
+| `negocios` | ⏳ PENDIENTE (mig. `20260512_enable_rls_negocios.sql`) | FOR ALL | FOR SELECT + FOR UPDATE solo si `negocio_id` coincide | No (admin/manual) |
+| `historial` | ⏳ PENDIENTE (mig. `20260512_enable_rls_tablas_hijas.sql`) | FOR ALL | FOR SELECT solo de su `negocio_id` | **Sí** (service-role bypassa RLS) |
+| `resumenes` | ⏳ PENDIENTE | FOR ALL | FOR SELECT solo de su `negocio_id` | **Sí** (service-role) |
+| `pedidos` | ⏳ PENDIENTE | FOR ALL | FOR SELECT solo de su `negocio_id` | **Sí** (service-role) |
+| `interacciones` | ⏳ PENDIENTE | FOR ALL | FOR SELECT solo de su `negocio_id` | **Sí** (service-role) |
+| `sesiones_pausadas` | ⏳ PENDIENTE | FOR ALL | FOR SELECT + FOR INSERT (scoped) | **Sí** (service-role) |
+| `mensajes_salientes_panel` | ⏳ PENDIENTE | FOR ALL | FOR SELECT + FOR INSERT (scoped) | **Sí** (service-role, cuando se cablee el procesador) |
+| `leads` | ⏳ PENDIENTE (mig. `20260512_create_leads_table.sql`) | FOR ALL | Sin acceso | No (escribe wizard via service-role) |
+| `usuarios_panel` | NO habilitado (decisión consciente — las policies de las demás tablas dependen de poder leer esta tabla via subquery) | n/a | n/a | No |
+
+⚠️ **Requisito crítico para que RLS funcione:** todas las consultas del bot de n8n DEBEN usar la **service-role key** (no anon). Service-role bypassa RLS por diseño de Supabase. Si n8n usa anon, RLS rompe el bot completamente.
+
+### Pattern de policy estándar
+
+Cada policy resuelve role/scope vía subquery a `usuarios_panel`:
+
+```sql
+-- Admin (cualquier tabla)
+USING (
+  EXISTS (
+    SELECT 1 FROM public.usuarios_panel up
+    WHERE up.auth_user_id = auth.uid()
+      AND up.rol = 'admin' AND up.activo = true
+  )
+)
+
+-- Owner / operator (cualquier tabla con negocio_id)
+USING (
+  negocio_id IN (
+    SELECT up.negocio_id FROM public.usuarios_panel up
+    WHERE up.auth_user_id = auth.uid()
+      AND up.rol IN ('owner', 'operator') AND up.activo = true
+  )
+)
+```
+
+`auth.uid()` viene del JWT de Supabase Auth (cookie del panel). En conexiones service-role, `auth.uid()` es null pero las policies se SKIP por completo, así que el bot no se ve afectado.
+
 ## Antes de hacer ALTER TABLE
 
 ❌ **NO modificar el schema sin aprobación explícita de Michael.** El bot de n8n depende de columnas y nombres específicos. Cualquier cambio rompe producción.
 
-✅ Migraciones ya aprobadas:
-- `001_add_auth_user_id.sql` (ejecutada 2026-05-09).
+✅ Migraciones aprobadas y ejecutadas:
+- `001_add_auth_user_id.sql` — ejecutada 2026-05-09.
+
+⏳ Migraciones aprobadas y PENDIENTES de aplicar:
+- `20260512_create_leads_table.sql` — crea tabla `leads` + RLS admin-only.
+- `20260512_enable_rls_negocios.sql` — habilita RLS en `negocios`.
+- `20260512_enable_rls_tablas_hijas.sql` — habilita RLS en 6 tablas operacionales.
+
+**Antes de aplicar las 3 pendientes**, verificar que n8n use service-role key (no anon). Ver `supabase/migrations/README.md`.
 
 ## Tipos TypeScript
 
