@@ -160,7 +160,7 @@ export function OnboardingWizard() {
     if (result.ok) {
       clear();
       setStep5InMemory(null);
-      router.push("/onboarding/completado");
+      router.push(`/onboarding/completado?ref=${result.leadId}`);
     }
 
     return result;

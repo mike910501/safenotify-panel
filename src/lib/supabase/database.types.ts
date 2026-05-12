@@ -447,6 +447,67 @@ export type Database = {
           }
         ];
       };
+      /**
+       * Agregada manualmente en Fase B (2026-05-12). La migración
+       * `20260512_create_leads_table.sql` ya está aplicada en producción.
+       * Regenerar con `npx supabase gen types typescript` cuando sea posible.
+       */
+      leads: {
+        Row: {
+          id: string;
+          nombre_negocio: string;
+          tipo_negocio: string | null;
+          contacto_nombre: string;
+          contacto_email: string;
+          contacto_telefono: string | null;
+          ciudad: string | null;
+          payload_wizard: Json;
+          estado: "nuevo" | "contactado" | "convertido" | "descartado";
+          notas_admin: string | null;
+          negocio_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          nombre_negocio: string;
+          tipo_negocio?: string | null;
+          contacto_nombre: string;
+          contacto_email: string;
+          contacto_telefono?: string | null;
+          ciudad?: string | null;
+          payload_wizard: Json;
+          estado?: "nuevo" | "contactado" | "convertido" | "descartado";
+          notas_admin?: string | null;
+          negocio_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          nombre_negocio?: string;
+          tipo_negocio?: string | null;
+          contacto_nombre?: string;
+          contacto_email?: string;
+          contacto_telefono?: string | null;
+          ciudad?: string | null;
+          payload_wizard?: Json;
+          estado?: "nuevo" | "contactado" | "convertido" | "descartado";
+          notas_admin?: string | null;
+          negocio_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "leads_negocio_id_fkey";
+            columns: ["negocio_id"];
+            isOneToOne: false;
+            referencedRelation: "negocios";
+            referencedColumns: ["negocio_id"];
+          }
+        ];
+      };
     };
     Views: {
       chats_activos: {
